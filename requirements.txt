@@ -1,7 +1,9 @@
 #
 
 Successfully installed django-decouple-2.1
-Successfully installed mysqlclient-2.2.7
+Successfully installed mysqlclient-2.2.7\
+Successfully installed Pillow-11.2.
+Successfully installed django-environ-0.12.0
 
 
 

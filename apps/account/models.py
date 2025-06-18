@@ -1,23 +1,45 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('student', 'Student'),
         ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
     ]
+
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    middle_name = models.CharField(max_length=150, blank=True)
+
+    groups = models.ManyToManyField(
+        Group,
+        related_name='customuser_set',  # Prevents clash with auth.User.groups
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups'
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='customuser_set',  # Prevents clash with auth.User.user_permissions
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions'
+    )
 
     def __str__(self):
-        full_name = f"{self.first_name} {self.middle_name} {self.last_name}".strip()
-        return f"{full_name} ({self.role})"
+        return f"{self.username} ({self.role})"
 
     def is_student(self):
         return self.role == 'student'
 
     def is_teacher(self):
         return self.role == 'teacher'
+
+    def is_admin(self):
+        return self.role == 'admin'
+
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
