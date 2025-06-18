@@ -14,6 +14,9 @@ def student_dashboard():
     # Display of student dashboard, landing page after login
     return None
 
+def focus_personal_info():
+    # Upon clicking the name window, focus the avatar and basic info of the student
+    return None
 
 
 # # # # # # # # # # # # #
