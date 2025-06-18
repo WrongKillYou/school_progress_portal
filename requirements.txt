@@ -1,0 +1,10 @@
+#
+
+
+Successfully built django-decouple
+Installing collected packages: django-decouple
+Successfully installed django-decouple-2.1
+
+
+
+#
