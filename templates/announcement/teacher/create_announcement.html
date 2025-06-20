@@ -1,0 +1,19 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: auto; padding: 2rem;">
+    <h1>Create Announcement for {{ class_obj.class_name }}</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Post Announcement</button>
+</form>
+
+</div>
+{% endblock %}

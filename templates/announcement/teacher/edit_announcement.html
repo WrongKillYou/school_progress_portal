@@ -1,0 +1,14 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: auto;">
+  <h2>Edit Announcement</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Changes</button>
+    <a href="{% url 'view_class_announcement' announcement.class_obj.id %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

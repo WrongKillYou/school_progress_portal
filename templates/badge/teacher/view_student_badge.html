@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Badge Summary</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f4f4f4;
+    }
+
+    .badge-container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .badge-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .shard {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin: 2px;
+        border-radius: 4px;
+        position: relative;
+        background-color: #eee;
+        text-align: center;
+        line-height: 30px;
+        font-size: 18px;
+        cursor: default;
+    }
+
+    .shard.merit { background-color: #fcd34d; }   /* Yellow for merit */
+    .shard.demerit { background-color: #ef4444; } /* Red for demerit */
+
+    .shard:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .tooltip {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 4px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 10;
+    bottom: calc(100% + 8px); /* More spacing from the shard */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 13px;
+    width: max-content;
+    max-width: 250px;
+    white-space: normal; /* Allow line breaks */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    word-break: break-word; /* Wrap long words if needed */
+}
+
+    .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+}
+
+  </style>
+</head>
+<body>
+    <p>Total Merit Badges: {{ merit_badges }}</p>
+    <p>Total Demerit Badges: {{ demerit_badges }}</p>
+
+
+  <div class="badge-container">
+  <div class="badge-title">⭐ Merit Badge Progress</div>
+  {% for shard in merit_shards %}
+    <div class="shard merit">
+      ★
+      <div class="tooltip">{{ shard.reason }}</div>
+    </div>
+  {% endfor %}
+  {% for i in empty_merit %}
+    <div class="shard">★</div>
+  {% endfor %}
+</div>
+
+<div class="badge-container">
+  <div class="badge-title">🟥 Demerit Badge Progress</div>
+  {% for shard in demerit_shards %}
+    <div class="shard demerit">
+      ■
+      <div class="tooltip">{{ shard.reason }}</div>
+    </div>
+  {% endfor %}
+  {% for i in empty_demerit %}
+    <div class="shard">■</div>
+  {% endfor %}
+</div>
+
+
+  <a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a>
+
+</body>
+</html>

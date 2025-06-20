@@ -1,0 +1,33 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: auto;">
+    <h1>Announcements for {{ class_obj.class_name }}</h1>
+
+    {% if announcements %}
+        {% for ann in announcements %}
+            <div style="border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
+                <h3 style="margin: 0;">{{ ann.title }}</h3>
+                <p>
+                    <small>
+                        Posted by {{ ann.teacher.user.get_full_name }} on {{ ann.date_posted|date:"F d, Y H:i" }}
+                    </small>
+                </p>
+                <p>{{ ann.content|linebreaks }}</p>
+
+                <!-- Action Buttons -->
+                <div style="margin-top: 0.5rem;">
+                    <a href="{% url 'edit_announcement' ann.id %}" style="padding: 6px 12px; background-color: #ffc107; color: #000; text-decoration: none; border-radius: 4px; margin-right: 10px;">
+                        ✏️ Edit
+                    </a>
+                    <a href="{% url 'delete_announcement' ann.id %}" style="padding: 6px 12px; background-color: #dc3545; color: #fff; text-decoration: none; border-radius: 4px;">
+                        🗑️ Delete
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p><em>No announcements found for this class.</em></p>
+    {% endif %}
+</div>
+{% endblock %}

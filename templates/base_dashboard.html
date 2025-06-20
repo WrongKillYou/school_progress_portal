@@ -1,0 +1,23 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Dashboard{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Core styles -->
+  <link rel="stylesheet" href="{% static 'css/tailwind.min.css' %}">
+  <link rel="stylesheet" href="{% static 'fullcalendar.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/teacher_home.css' %}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-[#edeaff] font-['Inter',sans-serif]">
+  <div class="flex min-h-screen">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+
+</html>

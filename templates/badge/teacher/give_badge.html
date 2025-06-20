@@ -1,0 +1,17 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 30px auto; background: #fff; padding: 20px; border-radius: 8px;">
+    <h2>Give {{ student.user.get_full_name }} a Badge</h2>
+    <p><strong>Class:</strong> {{ class_obj.class_name }} ({{ class_obj.subject }})</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Submit Badge</button>
+    </form>
+
+    <br>
+    <a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a>
+</div>
+{% endblock %}

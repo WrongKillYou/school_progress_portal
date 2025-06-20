@@ -4,6 +4,7 @@ from account.models import Student, Teacher, User
 from account.forms import StudentLoginForm, TeacherLoginForm
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
+from announcement.models import Announcement
 
 # Create your views here.
 
@@ -66,10 +67,16 @@ def teacher_login(request):
         'error': error
     })
 
-
+@login_required
+@role_required('teacher')
 def teacher_dashboard(request):
     # Display of teacher dashboard, landing page after login
-    return render(request, 'account/teacher/teacher_dashboard.html')
+    teacher = request.user.teacher_profile
+    announcement = Announcement.objects.order_by('-date_posted').first()
+    return render(request, "account/teacher/teacher_dashboard.html", {
+        "teacher": teacher,
+        "announcement": announcement
+    })
 
 
 def logout(request):
