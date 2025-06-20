@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ user.teacher.first_name }}!</h2>
+    <p>This is your teacher dashboard.</p>
+    <ul>
+        <li><a href="#">Create Class</a></li>
+        <li><a href="#">Upload Grades</a></li>
+        <li><a href="#">Scan Attendance</a></li>
+    </ul>
+
+    <div class="logout-container">
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+{% endblock %}
