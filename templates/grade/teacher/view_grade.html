@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Grade</title>
+</head>
+<body>
+    {% load grade_extras %}
+
+    <h1>{{ student.user.get_full_name }}'s Grades</h1>
+    <h2>{{ class_obj.class_name }}</h2>
+
+    <!-- Quarter selection -->
+    <h3>Select Quarter:</h3>
+    <ul>
+        {% for q in quarters %}
+            <li>
+                {% if q == selected_quarter %}
+                    <strong>Quarter {{ q }}</strong>
+                {% else %}
+                    <a href="{% url 'view_grade' student.id class_obj.id q %}">Quarter {{ q }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    {% with grades|dict_get:selected_quarter as g %}
+        <h3>Written Works</h3>
+        <ul>
+            {% for item in g.written_work %}
+                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
+            {% empty %}
+                <li>No written work scores</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Performance Tasks</h3>
+        <ul>
+            {% for item in g.performance_task %}
+                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
+            {% empty %}
+                <li>No performance task scores</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Quarterly Assessment</h3>
+        <ul>
+            {% for item in g.quarterly_assessment %}
+                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
+            {% empty %}
+                <li>No quarterly assessment score</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Final Grade: {{ g.final_grade|default:"N/A" }}</h2>
+    {% endwith %}
+
+    <p><a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a></p>
+</body>
+</html>

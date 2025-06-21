@@ -5,6 +5,10 @@ from .models import BadgeShard
 from .forms import BadgeShardForm
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
+from django.contrib import messages
+from badge.models import BadgeShard
+from django.http import HttpResponseForbidden
+
 
 # Create your views here.
 
@@ -27,6 +31,9 @@ def view_badge():
 # TEACHER 
 # # # # # # # # # # # # #
 
+
+@login_required
+@role_required('teacher')
 def view_student_badge(request, student_id, class_id):
     # View the badge collection of an individual student
     student = get_object_or_404(Student, id=student_id)
@@ -51,6 +58,10 @@ def view_student_badge(request, student_id, class_id):
 
     return render(request, 'badge/teacher/view_student_badge.html', context)
 
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+@login_required
+@role_required('teacher')
 def give_badge(request, student_id, class_id):
     # GIve a shard or badge to the student, stating the reason
     student = get_object_or_404(Student, id=student_id)
@@ -75,6 +86,19 @@ def give_badge(request, student_id, class_id):
         'class_obj': class_obj,
     })
 
-def delete_badge():
-    # Delete a shard or badge of the student
-    return None
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+@login_required
+@role_required('teacher')
+def delete_badge(request, shard_id):
+     # Delete a shard or badge of the student
+    shard = get_object_or_404(BadgeShard, id=shard_id)
+
+    if request.method == "POST":
+        shard.delete()
+        messages.success(request, f"{shard.type.title()} shard deleted successfully.")
+        return redirect("view_student_badge", student_id=shard.student.id, class_id=shard.class_obj.id)
+
+    return HttpResponseForbidden("Only POST method is allowed.")
+
+

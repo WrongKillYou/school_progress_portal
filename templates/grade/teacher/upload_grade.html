@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Grades</title>
+</head>
+<body>
+    <h1>Upload Grades for {{ class_obj.class_name }}</h1>
+
+    <!-- Show messages -->
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {{ message }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="quarter">Quarter:</label>
+        <select name="quarter" id="quarter" required>
+            <option value="1">1st Quarter</option>
+            <option value="2">2nd Quarter</option>
+            <option value="3">3rd Quarter</option>
+            <option value="4">4th Quarter</option>
+        </select><br><br>
+
+        <label for="grades_file">Upload Excel File:</label>
+        <input type="file" name="grades_file" accept=".xlsx" required><br><br>
+
+        <button type="submit">Upload Grades</button>
+    </form>
+
+    <p><a href="{% url 'download_file' class_obj.id %}">📥 Download Template</a></p>
+
+    <p><a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a></p>
+</body>
+</html>

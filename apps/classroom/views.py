@@ -35,6 +35,8 @@ def view_handled_class(request):
         'classes': classes
     })
 
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
 @login_required
 @role_required('teacher')
 def view_class_list(request, class_id):

@@ -26,6 +26,7 @@ class GradeItem(models.Model):
     component = models.CharField(max_length=2, choices=COMPONENT_CHOICES)
     score = models.FloatField()
     highest_possible_score = models.FloatField()
+    quarter = models.PositiveSmallIntegerField(default=1)  # 1 to 4
 
     def percentage_score(self):
         if self.highest_possible_score == 0:
@@ -40,13 +41,18 @@ class GradeItem(models.Model):
 class FinalGrade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE)
-    final_grade = models.FloatField(blank=True, null=True)  # Can be computed and saved
+    quarter = models.PositiveSmallIntegerField(default=1)  # 👈 Add this line!
+    final_grade = models.FloatField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('student', 'class_obj')
+        unique_together = ('student', 'class_obj', 'quarter')  # 👈 Update constraint!
 
     def compute_final_grade(self):
-        items = GradeItem.objects.filter(student=self.student, class_obj=self.class_obj)
+        items = GradeItem.objects.filter(
+            student=self.student,
+            class_obj=self.class_obj,
+            quarter=self.quarter  # 👈 Make sure to filter by quarter
+        )
         scheme = self.class_obj.grading_scheme
 
         total_scores = {'WW': 0, 'PT': 0, 'QA': 0}
@@ -73,5 +79,4 @@ class FinalGrade(models.Model):
         return self.final_grade
 
     def __str__(self):
-        return f"{self.student} - {self.class_obj} = {self.final_grade if self.final_grade else 'Not yet computed'}"
-
+        return f"{self.student} - {self.class_obj} - Q{self.quarter} = {self.final_grade or 'N/A'}"

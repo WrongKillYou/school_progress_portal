@@ -71,6 +71,9 @@
                     <a href="{% url 'view_student_badge' enrollment.student.id class_obj.id %}" class="btn">View Badge</a>
                     <a href="{% url 'give_badge' enrollment.student.id class_obj.id %}" class="btn">Give Badge</a>
                     <a href="{% url 'view_student_attendance' enrollment.student.id %}" class="btn">View Calendar</a>
+                    <a href="{% url 'view_grade' student_id=enrollment.student.id class_id=class_obj.id quarter=1 %}" class="btn">View Grade</a>
+
+
                 </td>
             </tr>
             {% empty %}

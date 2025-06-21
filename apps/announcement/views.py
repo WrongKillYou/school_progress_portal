@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from classroom.models import Class
 from django.contrib.auth.decorators import login_required
+from config.decorators import role_required
 from .forms import AnnouncementForm
 from .models import Announcement
 
@@ -15,6 +16,7 @@ def focus_announcement():
     # Upon clicking the announcement window, focus the lists of announcements from every class
     return None
 
+# # # # # # # # # # # # # # # # # # # # # # # # #
 
 def view_announcement():
     # View an individual announcement
@@ -26,6 +28,8 @@ def view_announcement():
 # TEACHER 
 # # # # # # # # # # # # #
 
+@login_required
+@role_required('teacher')
 def view_class_announcement(request, class_id):
     # View the lists of announcement from a class
     class_obj = get_object_or_404(Class, id=class_id)
@@ -36,6 +40,11 @@ def view_class_announcement(request, class_id):
         'announcements': announcements
     })
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+@login_required
+@role_required('teacher')
 def create_announcement(request, class_id):
     # Create an announcement for a certain class
     class_obj = get_object_or_404(Class, id=class_id)
@@ -57,6 +66,10 @@ def create_announcement(request, class_id):
         'class_obj': class_obj
     })
 
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+@login_required
+@role_required('teacher')
 def edit_announcement(request, announcement_id):
     # Edit an announcement for a certain class
     announcement = get_object_or_404(Announcement, id=announcement_id)
@@ -78,6 +91,11 @@ def edit_announcement(request, announcement_id):
         'announcement': announcement,
     })
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+@login_required
+@role_required('teacher')
 def delete_announcement(request, announcement_id):
     # Delete an announcement for a certain class
     announcement = get_object_or_404(Announcement, id=announcement_id)

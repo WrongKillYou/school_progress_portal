@@ -4,114 +4,214 @@
   <meta charset="UTF-8">
   <title>Badge Summary</title>
   <style>
+    [x-cloak] { display: none !important; }
+
     body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
     }
 
     .badge-container {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
     }
 
     .badge-title {
-        font-size: 20px;
-        margin-bottom: 10px;
+      font-size: 20px;
+      margin-bottom: 10px;
     }
 
     .shard {
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        margin: 2px;
-        border-radius: 4px;
-        position: relative;
-        background-color: #eee;
-        text-align: center;
-        line-height: 30px;
-        font-size: 18px;
-        cursor: default;
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      margin: 2px;
+      border-radius: 4px;
+      position: relative;
+      background-color: #eee;
+      text-align: center;
+      line-height: 30px;
+      font-size: 18px;
+      cursor: default;
     }
 
-    .shard.merit { background-color: #fcd34d; }   /* Yellow for merit */
-    .shard.demerit { background-color: #ef4444; } /* Red for demerit */
+    .shard.merit { background-color: #fcd34d; cursor: pointer; }
+    .shard.demerit { background-color: #ef4444; cursor: pointer; }
 
     .shard:hover .tooltip {
-        visibility: visible;
-        opacity: 1;
+      visibility: visible;
+      opacity: 1;
     }
 
     .tooltip {
-    visibility: hidden;
-    background-color: #333;
-    color: #fff;
-    text-align: left;
-    border-radius: 4px;
-    padding: 8px 12px;
-    position: absolute;
-    z-index: 10;
-    bottom: calc(100% + 8px); /* More spacing from the shard */
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    font-size: 13px;
-    width: max-content;
-    max-width: 250px;
-    white-space: normal; /* Allow line breaks */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    word-break: break-word; /* Wrap long words if needed */
-}
+      visibility: hidden;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 4px;
+      padding: 8px 12px;
+      position: absolute;
+      z-index: 10;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      font-size: 13px;
+      width: max-content;
+      max-width: 250px;
+      white-space: normal;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      word-break: break-word;
+    }
 
     .tooltip::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-width: 6px;
-        border-style: solid;
-        border-color: #333 transparent transparent transparent;
-}
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #333 transparent transparent transparent;
+    }
 
+    .button {
+      padding: 10px 15px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+
+    .modal-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+
+    .modal-box h2 {
+      color: #e74c3c;
+    }
+
+    .modal-box button {
+      margin: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .btn-cancel { background-color: #ccc; }
+    .btn-confirm { background-color: #e74c3c; color: white; }
   </style>
 </head>
-<body>
-    <p>Total Merit Badges: {{ merit_badges }}</p>
-    <p>Total Demerit Badges: {{ demerit_badges }}</p>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<body x-data="{
+        deleteMode: false,
+        selectedShardId: null,
+        selectedShardType: '',
+        selectedReason: '',
+        showModal: false
+      }">
+
+  <p>Total Merit Badges: {{ merit_badges }}</p>
+  <p>Total Demerit Badges: {{ demerit_badges }}</p>
+
+  <!-- Delete mode button -->
+  <button class="button" @click="deleteMode = true">Delete Shard</button>
 
 
+  <!-- Cancel delete mode -->
+  <template x-if="deleteMode">
+    <button @click="deleteMode = false" class="button" style="background-color: #555; margin-left: 10px;">
+      Cancel Delete Mode
+    </button>
+  </template>
+
+  <!-- Instruction -->
+  <template x-if="deleteMode">
+    <p style="margin: 10px 0;">Please select a shard to delete.</p>
+  </template>
+
+  <!-- Merit Shards -->
   <div class="badge-container">
-  <div class="badge-title">⭐ Merit Badge Progress</div>
-  {% for shard in merit_shards %}
-    <div class="shard merit">
-      ★
-      <div class="tooltip">{{ shard.reason }}</div>
+    <div class="badge-title">⭐ Merit Badge Progress</div>
+    {% for shard in merit_shards %}
+      <div class="shard merit"
+        @click="if(deleteMode){
+          selectedShardId={{ shard.id }};
+          selectedShardType='Merit';
+          selectedReason='{{ shard.reason|escapejs }}';
+          showModal = true;
+        }">
+        ★
+        <div class="tooltip">{{ shard.reason }}</div>
+      </div>
+    {% endfor %}
+    {% for i in empty_merit %}
+      <div class="shard">★</div>
+    {% endfor %}
+  </div>
+
+  <!-- Demerit Shards -->
+  <div class="badge-container">
+    <div class="badge-title">🟥 Demerit Badge Progress</div>
+    {% for shard in demerit_shards %}
+      <div class="shard demerit"
+        @click="if(deleteMode){
+          selectedShardId={{ shard.id }};
+          selectedShardType='Demerit';
+          selectedReason='{{ shard.reason|escapejs }}';
+          showModal = true;
+        }">
+        ■
+        <div class="tooltip">{{ shard.reason }}</div>
+      </div>
+    {% endfor %}
+    {% for i in empty_demerit %}
+      <div class="shard">■</div>
+    {% endfor %}
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-bg" x-show="showModal" x-cloak>
+    <div class="modal-box">
+      <h2>Confirm Delete</h2>
+      <p>Are you sure you want to delete this <strong x-text="selectedShardType"></strong> shard?</p>
+      <p style="font-size: 0.9em; color: gray; margin-top: 5px;">
+        Reason: <span x-text="selectedReason"></span>
+      </p>
+
+      <form :action="'{% url 'delete_badge' 0 %}'.replace('0', selectedShardId)" method="post" style="margin-top: 15px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm">Yes, Delete</button>
+        <button type="button" class="btn-cancel"
+                @click="showModal = false; deleteMode = false; selectedShardId = null; selectedShardType = ''; selectedReason = ''">
+          Cancel
+        </button>
+      </form>
     </div>
-  {% endfor %}
-  {% for i in empty_merit %}
-    <div class="shard">★</div>
-  {% endfor %}
-</div>
+  </div>
 
-<div class="badge-container">
-  <div class="badge-title">🟥 Demerit Badge Progress</div>
-  {% for shard in demerit_shards %}
-    <div class="shard demerit">
-      ■
-      <div class="tooltip">{{ shard.reason }}</div>
-    </div>
-  {% endfor %}
-  {% for i in empty_demerit %}
-    <div class="shard">■</div>
-  {% endfor %}
-</div>
-
-
+  <br>
   <a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a>
 
 </body>

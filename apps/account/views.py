@@ -13,7 +13,7 @@ from announcement.models import Announcement
 # # # # # # # # # # # # #
 
 def student_login(request):
-    # Student login by scanning their QR Code
+    # Student login by scanning their QR Code (but text LRN for now)
     if request.user.is_authenticated:
         return redirect('student_dashboard')  # redirect if already logged in
 
@@ -80,7 +80,7 @@ def teacher_dashboard(request):
 
 
 def logout(request):
-    # Logout
+    # ogout
     django_logout(request)
     return redirect('student_login')
 
