@@ -9,6 +9,10 @@ class Class(models.Model):
     def __str__(self):
         return f"{self.class_name} - {self.subject}"
     
+    class Meta:
+        verbose_name = "Class"
+        verbose_name_plural = "Classes"  # Correct plural!
+    
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='enrollments')

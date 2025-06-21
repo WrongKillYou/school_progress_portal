@@ -30,4 +30,6 @@
         <p><em>No announcements found for this class.</em></p>
     {% endif %}
 </div>
+
+<a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a>
 {% endblock %}

@@ -5,16 +5,16 @@ def role_required(required_role):
     """
     How to Use:
 
-        If you want a view (on views.py) to be accessed only by admins, put this decorator
+        If you want a view (on views.py) to be accessed only by student or teacher, put this decorator
     on top of the function:
 
-        @role_required('admin')
+        @role_required('teacher')
 
         The same goes with:
 
         @role_required('student')
 
-        This is to ensure that admins and students can access their corresponding pages.
+        This is to ensure that teachers and students can access their corresponding pages.
     
     """
     def decorator(view_func):
