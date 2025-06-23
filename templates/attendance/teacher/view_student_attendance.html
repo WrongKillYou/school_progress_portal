@@ -1,15 +1,55 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ student.user.get_full_name }}'s Calendar</title>
+    <meta charset="UTF-8">
+    <title>{{ student.user.get_full_name }} - Attendance Calendar</title>
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+    <style>
+        .flatpickr-day.present {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+        .flatpickr-day.absent {
+            background-color: #F44336 !important;
+            color: white;
+        }
+        .flatpickr-day.incomplete {
+            background-color: #FFC107 !important;
+            color: black;
+        }
+    </style>
 </head>
 <body>
-    <h1>Calendar for {{ student.user.get_full_name }}</h1>
-    <p>Grade: {{ student.level }} | Section: {{ student.section }}</p>
+    <h1>{{ student.user.get_full_name }} – Attendance</h1>
 
-    <!-- Placeholder content -->
-    <p>[Calendar will go here soon!]</p>
+    <input id="attendance-calendar" class="calendar" readonly>
 
-    <a href="javascript:history.back()">Go Back</a>
+    <script type="application/json" id="attendance-data">
+        {{ attendance_json|safe }}
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const attendanceData = JSON.parse(document.getElementById("attendance-data").textContent);
+
+            function getRecordForDate(dateStr) {
+                return attendanceData.find(item => item.date === dateStr);
+            }
+
+            flatpickr("#attendance-calendar", {
+                inline: true,
+                onDayCreate: function (dObj, dStr, fp, dayElem) {
+                    const date = dayElem.dateObj.toLocaleDateString('en-CA'); // 'YYYY-MM-DD' in local timezone
+                    const record = getRecordForDate(date);
+                    if (record) {
+                        dayElem.classList.add(record.status);
+                        dayElem.setAttribute("title", `Time In: ${record.time_in}\nTime Out: ${record.time_out}`);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
