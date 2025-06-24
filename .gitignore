@@ -20,3 +20,5 @@ ENV/
 
 # Mac
 .DS_Store
+
+tailwindcss.exe

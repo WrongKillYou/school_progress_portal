@@ -1,17 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from openpyxl import load_workbook, Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment
 from django.http import HttpResponse
-from .models import GradeItem, FinalGrade
-from account.models import Student
-from classroom.models import Class, Enrollment
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
-from collections import defaultdict
 
-# Create your views here.
+from openpyxl import load_workbook, Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment
+
+from .models import GradeItem, FinalGrade
+from account.models import Student
+from classroom.models import Class, Enrollment
 
 # # # # # # # # # # # # #
 # STUDENT 
@@ -290,13 +290,6 @@ def upload_grade(request, class_id):
 
     return render(request, 'grade/teacher/upload_grade.html', {'class_obj': class_obj})
 
-
-
-
-from django.shortcuts import render, get_object_or_404
-from account.models import Student
-from classroom.models import Class
-from .models import GradeItem
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 

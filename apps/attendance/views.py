@@ -1,14 +1,17 @@
 from django.shortcuts import render, get_object_or_404
-from account.models import Student
-from django.contrib.auth.decorators import login_required
-from config.decorators import role_required
+
+import json
 from django.utils.timezone import now
 from datetime import date
 from django.http import JsonResponse
-from attendance.models import Attendance
 from django.core.serializers.json import DjangoJSONEncoder
-import json
+
+from account.models import Student
 from classroom.models import Class
+from attendance.models import Attendance
+
+from django.contrib.auth.decorators import login_required
+from config.decorators import role_required
 
 
 # Create your views here.
@@ -70,12 +73,13 @@ def scan_attendance(request):
 @login_required
 @role_required('teacher')
 def view_student_attendance(request, student_id):
+    # View the student's attendance, showing calendar
     student = get_object_or_404(Student, id=student_id)
     attendance_records = Attendance.objects.filter(student=student)
 
     attendance_data = [
         {
-            'date': record.date.strftime('%Y-%m-%d'),  # Already a `date` object
+            'date': record.date.strftime('%Y-%m-%d'),  
             'status': record.status,
             'time_in': record.time_in.strftime('%H:%M:%S') if record.time_in else 'N/A',
             'time_out': record.time_out.strftime('%H:%M:%S') if record.time_out else 'N/A',

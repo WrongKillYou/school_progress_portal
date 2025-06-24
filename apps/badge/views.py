@@ -1,13 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from account.models import Student
-from classroom.models import Class
-from .models import BadgeShard
-from .forms import BadgeShardForm
+from django.http import HttpResponseForbidden
+from django.contrib import messages
+
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
-from django.contrib import messages
+
+from account.models import Student
+from classroom.models import Class
 from badge.models import BadgeShard
-from django.http import HttpResponseForbidden
+from badge.forms import BadgeShardForm
+
 
 
 # Create your views here.
@@ -63,7 +65,7 @@ def view_student_badge(request, student_id, class_id):
 @login_required
 @role_required('teacher')
 def give_badge(request, student_id, class_id):
-    # GIve a shard or badge to the student, stating the reason
+    # Give a shard or badge to the student, stating the reason
     student = get_object_or_404(Student, id=student_id)
     class_obj = get_object_or_404(Class, id=class_id)
     teacher = request.user.teacher_profile

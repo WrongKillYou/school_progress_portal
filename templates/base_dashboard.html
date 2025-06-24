@@ -1,23 +1,28 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <title>{% block title %}Dashboard{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="{% static 'css/tailwind.min.css' %}">
+  <!-- Tailwind CSS -->
+  <link href="{% static 'css/tailwind.min.css' %}" rel="stylesheet">
+
+  <!-- Inter Font -->
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+
+
+  <!-- FullCalendar (if needed) -->
   <link rel="stylesheet" href="{% static 'fullcalendar.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/teacher_home.css' %}">
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-[#edeaff] font-['Inter',sans-serif]">
+
+<body class="bg-[#edeaff] text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-['Inter',sans-serif] transition-colors duration-300">
   <div class="flex min-h-screen">
     {% block content %}{% endblock %}
   </div>
 </body>
-
 </html>

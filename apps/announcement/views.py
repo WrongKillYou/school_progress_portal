@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from classroom.models import Class
+
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
-from .forms import AnnouncementForm
-from .models import Announcement
+
+from classroom.models import Class
+from announcement.forms import AnnouncementForm
+from announcement.models import Announcement
 
 
 # Create your views here.
@@ -42,6 +44,31 @@ def view_class_announcement(request, class_id):
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+def view_all_announcement(request):
+    # View all announcements created by the teacher; filter process added
+    teacher = request.user.teacher_profile
+    selected_class_id = request.GET.get('class_id')
+
+    # All classes this teacher handles
+    teacher_classes = Class.objects.filter(teacher=teacher)
+
+    # Filter announcements by class if class_id is provided
+    if selected_class_id and selected_class_id != 'all':
+        announcements = Announcement.objects.filter(teacher=teacher, class_obj__id=selected_class_id).order_by('-date_posted')
+    else:
+        announcements = Announcement.objects.filter(teacher=teacher).order_by('-date_posted')
+
+    return render(request, 'announcement/teacher/view_all_announcement.html', {
+        'announcements': announcements,
+        'teacher_classes': teacher_classes,
+        'selected_class_id': selected_class_id or 'all',
+    })
+
+
+
+
 
 @login_required
 @role_required('teacher')

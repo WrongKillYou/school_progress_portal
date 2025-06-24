@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from account.models import Teacher
-from .models import Class, Enrollment
+
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
+
+from account.models import Teacher
+from .models import Class, Enrollment
 
 
 # Create your views here.
@@ -40,7 +42,7 @@ def view_handled_class(request):
 @login_required
 @role_required('teacher')
 def view_class_list(request, class_id):
-    # VIew the list of students enrolled in the class, embedded with some possible actions
+    # View the list of students enrolled in the class, embedded with some possible actions
 
     class_obj = get_object_or_404(Class, id=class_id)
     

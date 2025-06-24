@@ -1,0 +1,77 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .container {
+        margin-left: 240px;
+        padding: 40px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .filter-bar {
+        margin-bottom: 20px;
+    }
+
+    .announcement-card {
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 16px;
+    }
+
+    .announcement-title {
+        font-weight: bold;
+        color: #4b0082;
+    }
+
+    .announcement-meta {
+        font-size: 0.9em;
+        color: #777;
+    }
+
+    .announcement-content {
+        margin-top: 10px;
+        color: #333;
+    }
+
+    select {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+</style>
+
+<div class="container">
+    <h1 class="text-xl font-semibold mb-4">📢 Your Announcements</h1>
+
+    <form method="get" class="filter-bar">
+        <label for="class_id">Filter by Class:</label>
+        <select name="class_id" onchange="this.form.submit()">
+            <option value="all" {% if selected_class_id == 'all' %}selected{% endif %}>All Classes</option>
+            {% for class in teacher_classes %}
+                <option value="{{ class.id }}" {% if selected_class_id|add:'' == class.id|stringformat:"s" %}selected{% endif %}>{{ class.class_name }} - {{ class.subject }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if announcements %}
+        {% for ann in announcements %}
+            <div class="announcement-card">
+                <div class="announcement-title">{{ ann.title }}</div>
+                <div class="announcement-meta">
+                    {{ ann.class_obj.class_name }} – {{ ann.date_posted|date:"M d, Y H:i" }}
+                </div>
+                <div class="announcement-content">
+                    {{ ann.content }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No announcements found.</p>
+    {% endif %}
+</div>
+{% endblock %}

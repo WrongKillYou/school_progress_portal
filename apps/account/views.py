@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout as django_logout
+
 from account.models import Student, Teacher, User
 from account.forms import StudentLoginForm, TeacherLoginForm
+
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
+
 from announcement.models import Announcement
+from classroom.models import Class, Enrollment
+from badge.models import BadgeShard
 
 # Create your views here.
 
@@ -72,15 +77,28 @@ def teacher_login(request):
 def teacher_dashboard(request):
     # Display of teacher dashboard, landing page after login
     teacher = request.user.teacher_profile
-    announcement = Announcement.objects.order_by('-date_posted').first()
-    return render(request, "account/teacher/teacher_dashboard.html", {
-        "teacher": teacher,
-        "announcement": announcement
-    })
+
+    handled_classes = Class.objects.filter(teacher=teacher)
+    total_classes = handled_classes.count()
+    total_students = Enrollment.objects.filter(class_obj__in=handled_classes).values('student').distinct().count()
+    total_announcements = Announcement.objects.filter(teacher=teacher).count()
+    total_merit = BadgeShard.objects.filter(teacher=teacher, type='merit').count()
+    total_demerit = BadgeShard.objects.filter(teacher=teacher, type='demerit').count()
+
+    context = {
+        'teacher': teacher,
+        'total_classes': total_classes,
+        'total_students': total_students,
+        'total_announcements': total_announcements,
+        'total_merit': total_merit,
+        'total_demerit': total_demerit,
+    }
+
+    return render(request, 'account/teacher/teacher_dashboard.html', context)
 
 
 def logout(request):
-    # ogout
+    # Logout
     django_logout(request)
     return redirect('student_login')
 
