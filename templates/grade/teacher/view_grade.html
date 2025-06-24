@@ -1,62 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>View Grade</title>
-</head>
-<body>
-    {% load grade_extras %}
+{% extends "base_dashboard.html" %}
+{% load grade_extras %}
 
-    <h1>{{ student.user.get_full_name }}'s Grades</h1>
-    <h2>{{ class_obj.class_name }}</h2>
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
 
-    <!-- Quarter selection -->
-    <h3>Select Quarter:</h3>
-    <ul>
+  <!-- Title -->
+  <div class="text-center mb-4">
+    <h3 class="text-primary">{{ student.user.get_full_name }}'s Grades</h3>
+    <p class="text-muted"><strong>Class:</strong> {{ class_obj.class_name }}</p>
+  </div>
+
+  <!-- Quarter Dropdown -->
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <label class="input-group-text" for="quarter">Quarter</label>
+      <select class="form-select" id="quarter" name="quarter" onchange="this.form.submit()">
         {% for q in quarters %}
-            <li>
-                {% if q == selected_quarter %}
-                    <strong>Quarter {{ q }}</strong>
-                {% else %}
-                    <a href="{% url 'view_grade' student.id class_obj.id q %}">Quarter {{ q }}</a>
-                {% endif %}
-            </li>
+          <option value="{{ q }}" {% if q == selected_quarter %}selected{% endif %}>Quarter {{ q }}</option>
         {% endfor %}
-    </ul>
+      </select>
+    </div>
+  </form>
 
-    <hr>
+  {% with grades|dict_get:selected_quarter as g %}
+    <!-- Written Works -->
+    <div class="mb-4">
+      <h5>📝 Written Works</h5>
+      <div class="row">
+        {% for item in g.written_work %}
+          <div class="col-md-4">
+            <div class="card mb-3 shadow-sm">
+              <div class="card-body text-center">
+                <p class="mb-1 fw-bold">Score</p>
+                <h4>{{ item.score }} / {{ item.highest_possible_score }}</h4>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No written work scores.</p>
+        {% endfor %}
+      </div>
+    </div>
 
-    {% with grades|dict_get:selected_quarter as g %}
-        <h3>Written Works</h3>
-        <ul>
-            {% for item in g.written_work %}
-                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
-            {% empty %}
-                <li>No written work scores</li>
-            {% endfor %}
-        </ul>
+    <!-- Performance Tasks -->
+    <div class="mb-4">
+      <h5>🎯 Performance Tasks</h5>
+      <div class="row">
+        {% for item in g.performance_task %}
+          <div class="col-md-4">
+            <div class="card mb-3 shadow-sm">
+              <div class="card-body text-center">
+                <p class="mb-1 fw-bold">Score</p>
+                <h4>{{ item.score }} / {{ item.highest_possible_score }}</h4>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No performance task scores.</p>
+        {% endfor %}
+      </div>
+    </div>
 
-        <h3>Performance Tasks</h3>
-        <ul>
-            {% for item in g.performance_task %}
-                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
-            {% empty %}
-                <li>No performance task scores</li>
-            {% endfor %}
-        </ul>
+    <!-- Quarterly Assessment -->
+    <div class="mb-4">
+      <h5>📚 Quarterly Assessment</h5>
+      <div class="row">
+        {% for item in g.quarterly_assessment %}
+          <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+              <div class="card-body text-center">
+                <p class="mb-1 fw-bold">Score</p>
+                <h4>{{ item.score }} / {{ item.highest_possible_score }}</h4>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No quarterly assessment score.</p>
+        {% endfor %}
+      </div>
+    </div>
 
-        <h3>Quarterly Assessment</h3>
-        <ul>
-            {% for item in g.quarterly_assessment %}
-                <li>{{ item.score }} / {{ item.highest_possible_score }}</li>
-            {% empty %}
-                <li>No quarterly assessment score</li>
-            {% endfor %}
-        </ul>
+    <!-- Final Grade -->
+    <div class="text-center">
+      <div class="card shadow-sm mx-auto" style="max-width: 300px;">
+        <div class="card-body">
+          <h5 class="card-title text-success">🎓 Final Grade</h5>
+          <h2 class="fw-bold">{{ g.final_grade|default:"N/A" }}</h2>
+        </div>
+      </div>
+    </div>
+  {% endwith %}
 
-        <h2>Final Grade: {{ g.final_grade|default:"N/A" }}</h2>
-    {% endwith %}
-
-    <p><a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a></p>
-</body>
-</html>
+  <!-- Back Button -->
+  <div class="text-center mt-4">
+    <a href="{% url 'view_class_list' class_obj.id %}" class="btn btn-outline-secondary">
+      ← Back to Class
+    </a>
+  </div>
+</div>
+{% endblock %}

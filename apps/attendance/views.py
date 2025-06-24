@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 
 from account.models import Student
-from classroom.models import Class
+from classroom.models import Class, Enrollment
 from attendance.models import Attendance
 
 from django.contrib.auth.decorators import login_required
@@ -70,16 +70,21 @@ def scan_attendance(request):
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
+
 @login_required
 @role_required('teacher')
 def view_student_attendance(request, student_id):
-    # View the student's attendance, showing calendar
     student = get_object_or_404(Student, id=student_id)
+
+    # Get the specific class where this student is enrolled — adjust as needed
+    enrollment = Enrollment.objects.filter(student=student).first()
+    class_obj = enrollment.class_obj if enrollment else None
+
     attendance_records = Attendance.objects.filter(student=student)
 
     attendance_data = [
         {
-            'date': record.date.strftime('%Y-%m-%d'),  
+            'date': record.date.strftime('%Y-%m-%d'),
             'status': record.status,
             'time_in': record.time_in.strftime('%H:%M:%S') if record.time_in else 'N/A',
             'time_out': record.time_out.strftime('%H:%M:%S') if record.time_out else 'N/A',
@@ -89,9 +94,12 @@ def view_student_attendance(request, student_id):
 
     context = {
         'student': student,
-        'attendance_json': json.dumps(attendance_data, cls=DjangoJSONEncoder)
+        'class_obj': class_obj,
+        'attendance_json': json.dumps(attendance_data, cls=DjangoJSONEncoder),
     }
+
     return render(request, 'attendance/teacher/view_student_attendance.html', context)
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # #

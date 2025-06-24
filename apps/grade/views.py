@@ -293,13 +293,19 @@ def upload_grade(request, class_id):
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
 @login_required
 @role_required('teacher')
 def view_grade(request, student_id, class_id, quarter):
     student = get_object_or_404(Student, id=student_id)
     class_obj = get_object_or_404(Class, id=class_id)
     grading_scheme = class_obj.grading_scheme
+
+    # Check if the user selected a quarter from the dropdown (via GET param)
+    selected_quarter = request.GET.get("quarter")
+    try:
+        selected_quarter = int(selected_quarter) if selected_quarter else int(quarter)
+    except ValueError:
+        selected_quarter = int(quarter)
 
     def compute_component(items):
         total_score = sum(item.score for item in items)
@@ -331,10 +337,11 @@ def view_grade(request, student_id, class_id, quarter):
         'class_obj': class_obj,
         'grades': grades,
         'quarters': range(1, 5),
-        'selected_quarter': quarter,
+        'selected_quarter': selected_quarter,
     }
 
     return render(request, 'grade/teacher/view_grade.html', context)
+
 
 
 

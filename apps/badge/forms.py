@@ -1,5 +1,3 @@
-# apps/badge/forms.py
-
 from django import forms
 from .models import BadgeShard
 
@@ -8,5 +6,10 @@ class BadgeShardForm(forms.ModelForm):
         model = BadgeShard
         fields = ['type', 'reason']
         widgets = {
-            'reason': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Reason for giving this badge...'}),
+            'type': forms.Select(attrs={'class': 'form-select'}),
+            'reason': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'form-control',
+                'placeholder': 'Reason for giving this badge...'
+            }),
         }

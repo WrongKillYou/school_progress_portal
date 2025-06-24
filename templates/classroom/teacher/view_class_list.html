@@ -1,87 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Class Details</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f4f4f4;
-        }
+{% extends 'base_dashboard.html' %}
+{% load static %}
 
-        .btn {
-            padding: 8px 14px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
+{% block content %}
+<div class="container py-5">
+  <!-- Page Title -->
+  <h2 class="mb-1">{{ class_obj.class_name }}</h2>
+  <p class="text-muted mb-4">Subject: {{ class_obj.subject }}</p>
 
-        .btn:hover {
-            background: #0056b3;
-        }
-
-        table {
-            width: 100%;
-            background: white;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        .header-actions {
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Class: {{ class_obj.class_name }} ({{ class_obj.subject }})</h1>
-
-    <div class="header-actions">
-        <a href="{% url 'create_announcement' class_obj.id %}" class="btn">Create Announcement</a>
-        <a href="{% url 'view_class_announcement' class_obj.id %}" class="btn">View Announcement</a>
-        <a href="{% url 'upload_grade' class_obj.id %}" class="btn">Upload Grades</a>
+  <!-- Header Icon-Style Buttons -->
+  <div class="d-flex gap-4 mb-5">
+    <div class="text-center">
+      <a href="{% url 'view_class_announcement' class_obj.id %}" class="btn btn-outline-primary d-flex flex-column align-items-center py-3 px-4">
+        📢
+        <span class="mt-2 small fw-semibold">View Announcement</span>
+      </a>
     </div>
+    <div class="text-center">
+      <a href="{% url 'upload_grade' class_obj.id %}" class="btn btn-outline-success d-flex flex-column align-items-center py-3 px-4">
+        📄
+        <span class="mt-2 small fw-semibold">Upload Grade</span>
+      </a>
+    </div>
+  </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>Level</th>
-                <th>Section</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for enrollment in enrollments %}
-            <tr>
-                <td>{{ enrollment.student.user.get_full_name }}</td>
-                <td>{{ enrollment.student.level }}</td>
-                <td>{{ enrollment.student.section }}</td>
-                <td>
-                    <a href="{% url 'view_student_badge' enrollment.student.id class_obj.id %}" class="btn">View Badge</a>
-                    <a href="{% url 'give_badge' enrollment.student.id class_obj.id %}" class="btn">Give Badge</a>
-                    <a href="{% url 'view_student_attendance' enrollment.student.id %}" class="btn">View Calendar</a>
-                    <a href="{% url 'view_grade' student_id=enrollment.student.id class_id=class_obj.id quarter=1 %}" class="btn">View Grade</a>
-
-
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">No students enrolled.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+  <!-- Student Table -->
+  <div class="table-responsive position-relative" style="overflow: visible;">
+    <table class="table table-bordered bg-white align-middle" style="position: static;">
+      <thead class="table-dark">
+        <tr>
+          <th>Student</th>
+          <th>Level</th>
+          <th>Section</th>
+          <th style="width: 150px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for enrollment in enrollments %}
+        <tr style="position: static;">
+          <td>{{ enrollment.student.user.get_full_name }}</td>
+          <td>{{ enrollment.student.level }}</td>
+          <td>{{ enrollment.student.section }}</td>
+          <td style="position: relative;">
+            <!-- Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-primary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                View
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{% url 'view_student_badge' enrollment.student.id class_obj.id %}">Badge</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'view_student_attendance' enrollment.student.id %}">Calendar</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'view_grade' student_id=enrollment.student.id class_id=class_obj.id quarter=1 %}">Grade</a>
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">No students enrolled.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</body>
-</html>
+  </div>
+
+  <!-- Back Button -->
+  <div class="mt-5 text-center">
+    <a href="{% url 'view_handled_class' %}" class="btn btn-outline-secondary">
+      &larr; Back to Handled Classes
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,17 +1,47 @@
 {% extends "base_dashboard.html" %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 30px auto; background: #fff; padding: 20px; border-radius: 8px;">
-    <h2>Give {{ student.user.get_full_name }} a Badge</h2>
-    <p><strong>Class:</strong> {{ class_obj.class_name }} ({{ class_obj.subject }})</p>
+<div class="container py-5" style="max-width: 600px;">
+    <div class="bg-white p-4 shadow-sm rounded">
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn">Submit Badge</button>
-    </form>
+        <!-- Page Heading -->
+        <h3 class="mb-3 text-primary text-center">
+            🎖️ Give a Badge to {{ student.user.get_full_name }}
+        </h3>
 
-    <br>
-    <a href="{% url 'view_class_list' class_obj.id %}">← Back to Class</a>
+        <!-- Class Info -->
+        <p class="text-muted text-center mb-4">
+            <strong>Class:</strong> {{ class_obj.class_name }} ({{ class_obj.subject }})
+        </p>
+
+        <!-- Form -->
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Badge Type -->
+            <div class="mb-3">
+                <label for="{{ form.type.id_for_label }}" class="form-label">Badge Type</label>
+                {{ form.type }}
+            </div>
+
+            <!-- Reason -->
+            <div class="mb-3">
+                <label for="{{ form.reason.id_for_label }}" class="form-label">Reason</label>
+                {{ form.reason }}
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary w-100">
+                ✅ Submit Badge
+            </button>
+        </form>
+
+        <!-- Back Link -->
+        <div class="text-center mt-4">
+            <a href="{% url 'view_class_list' class_obj.id %}" class="btn btn-outline-secondary">
+                ← Back to Class
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,55 +1,83 @@
+{% extends "base_dashboard.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ student.user.get_full_name }} - Attendance Calendar</title>
-    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
-    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
-    <style>
-        .flatpickr-day.present {
-            background-color: #4CAF50 !important;
-            color: white;
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px;">
+    <div class="bg-white shadow-sm rounded p-4">
+
+        <!-- Header -->
+        <h3 class="text-center text-primary mb-4">
+            📅 {{ student.user.get_full_name }} – Attendance Calendar
+        </h3>
+
+        <!-- Calendar -->
+        <input id="attendance-calendar" class="form-control" readonly style="width: 100%; cursor: default;">
+
+        <!-- Legend -->
+        <div class="mt-4">
+            <h6 class="fw-bold">Legend:</h6>
+            <ul class="list-unstyled d-flex gap-4 flex-wrap">
+                <li><span class="badge" style="background-color: #4CAF50;">Present</span></li>
+                <li><span class="badge" style="background-color: #F44336;">Absent</span></li>
+                <li><span class="badge" style="background-color: #FFC107; color: black;">Incomplete</span></li>
+            </ul>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-4">
+            <a href="{% url 'view_class_list' class_obj.id %}" class="btn btn-outline-secondary">
+                ← Back to Class
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance JSON -->
+<script type="application/json" id="attendance-data">
+    {{ attendance_json|safe }}
+</script>
+
+<!-- Flatpickr JS & Styling -->
+<link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+<script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+<style>
+    .flatpickr-day.present {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-radius: 50% !important;
+    }
+    .flatpickr-day.absent {
+        background-color: #F44336 !important;
+        color: white !important;
+        border-radius: 50% !important;
+    }
+    .flatpickr-day.incomplete {
+        background-color: #FFC107 !important;
+        color: black !important;
+        border-radius: 50% !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const attendanceData = JSON.parse(document.getElementById("attendance-data").textContent);
+
+        function getRecordForDate(dateStr) {
+            return attendanceData.find(item => item.date === dateStr);
         }
-        .flatpickr-day.absent {
-            background-color: #F44336 !important;
-            color: white;
-        }
-        .flatpickr-day.incomplete {
-            background-color: #FFC107 !important;
-            color: black;
-        }
-    </style>
-</head>
-<body>
-    <h1>{{ student.user.get_full_name }} – Attendance</h1>
 
-    <input id="attendance-calendar" class="calendar" readonly>
-
-    <script type="application/json" id="attendance-data">
-        {{ attendance_json|safe }}
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const attendanceData = JSON.parse(document.getElementById("attendance-data").textContent);
-
-            function getRecordForDate(dateStr) {
-                return attendanceData.find(item => item.date === dateStr);
-            }
-
-            flatpickr("#attendance-calendar", {
-                inline: true,
-                onDayCreate: function (dObj, dStr, fp, dayElem) {
-                    const date = dayElem.dateObj.toLocaleDateString('en-CA'); // 'YYYY-MM-DD' in local timezone
-                    const record = getRecordForDate(date);
-                    if (record) {
-                        dayElem.classList.add(record.status);
-                        dayElem.setAttribute("title", `Time In: ${record.time_in}\nTime Out: ${record.time_out}`);
-                    }
+        flatpickr("#attendance-calendar", {
+            inline: true,
+            disableMobile: true,
+            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                const date = dayElem.dateObj.toLocaleDateString('en-CA'); // YYYY-MM-DD
+                const record = getRecordForDate(date);
+                if (record) {
+                    dayElem.classList.add(record.status);
+                    dayElem.setAttribute("title", `🕒 Time In: ${record.time_in || '—'}\n🕕 Time Out: ${record.time_out || '—'}`);
                 }
-            });
+            }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

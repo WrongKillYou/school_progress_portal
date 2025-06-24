@@ -1,106 +1,29 @@
 {% extends 'base_dashboard.html' %}
-{% load static %}
-
+{% block title %}My Classes{% endblock %}
 {% block content %}
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9fb;
-    }
-
-    .container {
-        max-width: 960px;
-        margin: 40px auto;
-        padding: 20px;
-    }
-
-    .title {
-        font-size: 2em;
-        font-weight: bold;
-        color: #4b0082;
-        margin-bottom: 10px;
-    }
-
-    .subtitle {
-        color: #555;
-        margin-bottom: 20px;
-    }
-
-    .class-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-    }
-
-    .class-card {
-        background-color: #fff;
-        padding: 16px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #ddd;
-        transition: box-shadow 0.3s ease;
-    }
-
-    .class-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .class-title {
-        font-size: 1.2em;
-        color: #4b0082;
-        margin-bottom: 6px;
-    }
-
-    .class-detail {
-        font-size: 0.95em;
-        color: #333;
-        margin-bottom: 4px;
-    }
-
-    .btn {
-        display: inline-block;
-        margin-top: 10px;
-        padding: 8px 12px;
-        background-color: #4b0082;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 0.9em;
-    }
-
-    .btn:hover {
-        background-color: #360060;
-    }
-
-    .no-class {
-        background: #fff3cd;
-        border: 1px solid #ffeeba;
-        padding: 16px;
-        border-radius: 8px;
-        color: #856404;
-        text-align: center;
-    }
-</style>
-
 <div class="container">
-    <h1 class="title">My Handled Classes</h1>
-    <p class="subtitle">View the list of classes you're currently teaching:</p>
+  <h1 class="h3 fw-bold text-primary">My Handled Classes</h1>
+  <p class="text-muted">View the list of classes you're currently teaching:</p>
 
-    {% if classes %}
-        <div class="class-grid">
-            {% for class in classes %}
-                <div class="class-card">
-                    <div class="class-title">{{ class.class_name }}</div>
-                    <div class="class-detail"><strong>Subject:</strong> {{ class.subject }}</div>
-                    <div class="class-detail"><strong>Grade Level:</strong> {{ class.grade_level }}</div>
-                    <a href="{% url 'view_class_list' class.id %}" class="btn">View Students</a>
-                </div>
-            {% endfor %}
+  {% if classes %}
+    <div class="row g-4 mt-2">
+      {% for class in classes %}
+        <div class="col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+              <h5 class="card-title text-primary">{{ class.class_name }}</h5>
+              <p class="mb-1"><strong>Subject:</strong> {{ class.subject }}</p>
+              <p><strong>Grade Level:</strong> {{ class.grade_level }}</p>
+              <a href="{% url 'view_class_list' class.id %}" class="btn btn-sm btn-primary mt-2">View Students</a>
+            </div>
+          </div>
         </div>
-    {% else %}
-        <div class="no-class">
-            You are not currently handling any classes.
-        </div>
-    {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning mt-4 text-center">
+      You are not currently handling any classes.
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
