@@ -1,21 +1,293 @@
-{% extends "base.html" %}
+{# templates/student/dashboard.html #}
+{% extends "student_base.html" %}
+{% load static %}
 
-{% block title %}Student Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+
+
+    <!-- Component‑scoped styles -->
+    <style>
+        /* ================= Layout ================= */
+        .dashboard-container{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            grid-auto-rows:auto;
+            gap:10px;
+            max-width:1200px;
+            margin:0 auto;
+        }
+
+        /* ================= Star Plot ================= */
+        .star-plot{
+            grid-column:1/2;
+            background:#e7f3ff;
+            padding:20px;
+            border-radius:8px;
+            text-align:center;
+        }
+        .chart-wrap{
+            width:260px;
+            height:260px;
+            margin:0 auto;
+            position:relative;
+        }
+
+        /* ================= Announcement List ================= */
+        .ann-list{ margin:0; padding-left:18px; }
+        .ann-list li{ margin-bottom:8px; list-style-type:disc; }
+        .ann-title{ font-weight:600; }
+
+        /* ================= Badge System ================= */
+        .badge-grid{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+        .badge{
+            display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+            width:70px; height:70px; position:relative;
+        }
+        .badge.star .shard{
+            width:14px; height:14px; margin:2px; background-color:#ccc;
+            clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+        }
+        .badge.square .shard{ width:30px; height:30px; margin:2px; background-color:#ccc; }
+        /* Active shards */
+        .badge .shard.active{ background-color:gold; }          /* Merit */
+        .badge.square .shard.active{ background-color:crimson; }/* Demerit */
+
+        /* ================= Debug Boundaries ================= */
+        /* Remove or comment‑out this block when you are happy with spacing */
+        .star-plot,
+        .avatar,
+        .calendar,
+        .name-box,
+        .badge-box{
+            outline:2px dashed rgba(0,0,0,.4);
+            outline-offset:-2px; /* keeps outline inside element box */
+        }
+
+        /* ---------- Avatar ---------- */
+        .avatar            { text-align:center; }
+        .avatar-img        {
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            object-fit:cover;   /* keeps the image from stretching */
+        }
+
+        /* ---------- Name box ---------- */
+        .name-box          { text-align:center; }
+        .student-name      { font-size:1.25rem; font-weight:600; margin:0; }
+
+        /* Calendar */
+        .flatpickr-day.attendance-present,
+        .flatpickr-day.attendance-absent,
+        .flatpickr-day.attendance-incomplete {
+            color: white !important;
+            border-radius: 50% !important;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flatpickr-day.attendance-present {
+            background-color: #28a745 !important;  /* Green */
+        }
+
+        .flatpickr-day.attendance-absent {
+            background-color: #dc3545 !important;  /* Red */
+        }
+
+        .flatpickr-day.attendance-incomplete {
+            background-color: #ffc107 !important;  /* Yellow */
+            color: black !important;
+        }
+
+
+    </style>
+{% endblock %}
 
 {% block content %}
-    <h2>Welcome, {{ user.student.first_name }}!</h2>
-    <p>This is your student dashboard.</p>
-    <ul>
-        <li><a href="#">View Grades</a></li>
-        <li><a href="#">View Attendance</a></li>
-        <li><a href="#">View Badges</a></li>
-    </ul>
+    <div class="dashboard-container">
 
-     <div class="logout-container">
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        </div>
+        <!-- === Column 1 === -->
+        <!-- ⭐ Star Plot -->
+        <section class="star-plot">
+            <h5>Star Plot</h5>
 
+            {% if grade_labels %}
+                <div class="chart-wrap">
+                    <!-- Chart.js will render here -->
+                    <canvas id="gradeRadarChart" width="260" height="260" aria-label="Radar chart of final grades"></canvas>
+                </div>
+            {% else %}
+                <p class="text-muted">No grades yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- === Column 2 === -->
+        <!-- 🧑‍🎓 Avatar -->
+        <section class="avatar">
+            {% if student.photo %}
+                <img src="{{ student.photo.url }}"
+                    alt="{{ student.user.get_full_name }}"
+                    class="avatar-img">
+            {% else %}
+                {# fallback image in static/images/ #}
+                <img src="{% static 'images/no-image.png' %}"
+                    alt="Default avatar"
+                    class="avatar-img">
+            {% endif %}
+        </section>
+
+        <!-- 🗓️ Attendance Calendar -->
+        <section class="calendar">
+            <input type="text"
+                id="calendar"
+                placeholder="Attendance"
+                readonly
+                style="width:100%;cursor:pointer;"
+                aria-label="Attendance calendar">
+        </section>
+
+        <!-- === Column 3 === -->
+        <!-- 📢 Announcements -->
+        <section class="announce">
+            <h5>Announcements</h5>
+
+            {% if announcements %}
+                <ul class="ann-list">
+                    {% for ann in announcements %}
+                        <li>
+                            <span class="ann-title">{{ ann.title }}</span><br>
+                            <small class="text-muted">
+                                {{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }} |
+                                {{ ann.date_posted|date:"M d, Y g:i A" }}
+                            </small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted m-0">No announcements available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Student name + modal trigger -->
+        <section class="name-box">
+            <p class="student-name">{{ student.user.get_full_name }}</p>
+        </section>
+
+        <!-- 🏅 Badge Collection -->
+        <section class="badge-box">
+            <h5>Badges</h5>
+
+            <div class="badge-grid">
+
+                {# ⭐ Merit Stars #}
+                {% for _ in full_stars %}
+                    <div class="badge star">
+                        {% for j in "12345" %}
+                            <div class="shard active"></div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                {% if star_fragments > 0 %}
+                    <div class="badge star">
+                        {% for j in "12345" %}
+                            <div class="shard {% if forloop.counter <= star_fragments %}active{% endif %}"></div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# 🔳 Demerit Squares #}
+                {% for _ in full_squares %}
+                    <div class="badge square">
+                        {% for j in "1234" %}
+                            <div class="shard active"></div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                {% if square_fragments > 0 %}
+                    <div class="badge square">
+                        {% for j in "1234" %}
+                            <div class="shard {% if forloop.counter <= square_fragments %}active{% endif %}"></div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </section>
+
+    </div>
+
+    {# Modal markup remains unchanged #}
+{% endblock %}
+
+{% block extra_js %}
+    <!-- External Libraries -->
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+    <script src="{% static 'js/flatpickr.min.js' %}"></script>
+
+    {{ grade_labels|json_script:"grade-labels" }}
+    {{ grade_values|json_script:"grade-values" }}
+    {{ attendance_data|json_script:"attendance-json" }}
+
+    <script>
+        /* ---------------- Radar Chart ---------------- */
+        const labelsJSON = JSON.parse(document.getElementById('grade-labels').textContent || '[]');
+
+        if (labelsJSON.length){
+            const ctx = document.getElementById('gradeRadarChart').getContext('2d');
+            const dataVals = JSON.parse(document.getElementById('grade-values').textContent || '[]');
+
+            window.gradeChart = new Chart(ctx,{
+                type:'radar',
+                data:{
+                    labels:labelsJSON,
+                    datasets:[{
+                        label:'Final Grade',
+                        data:dataVals,
+                        backgroundColor:'rgba(54,162,235,.2)',
+                        borderColor:'rgba(54,162,235,1)',
+                        borderWidth:2,
+                        pointRadius:3
+                    }]
+                },
+                options:{
+                    responsive:false,          // Prevent infinite resize loop
+                    maintainAspectRatio:false,
+                    scales:{ r:{ min:70, max:100, ticks:{ stepSize:5 } } },
+                    plugins:{ legend:{ display:false } }
+                }
+            });
+        }
+
+        /** Download the radar chart as PNG. */
+        function downloadChart(){
+            const a = document.createElement('a');
+            a.download = 'final_grades_chart.png';
+            a.href = window.gradeChart.toBase64Image();
+            a.click();
+        }
+
+        /* --------------- Flatpickr --------------- */
+        const attendanceJSON = JSON.parse(
+        document.getElementById("attendance-json").textContent || "[]"
+    );
+
+    flatpickr("#calendar", {
+        inline: true,
+        disableMobile: true,
+        onDayCreate: function(_, __, ___, dayElem) {
+            const dateStr = dayElem.dateObj.toISOString().split("T")[0];
+            const rec = attendanceJSON.find((r) => r.date === dateStr);
+
+            if (rec) {
+                dayElem.classList.add("attendance-" + rec.status);
+                dayElem.title = rec.status.charAt(0).toUpperCase() + rec.status.slice(1);
+            }
+        }
+    });
+    </script>
 {% endblock %}

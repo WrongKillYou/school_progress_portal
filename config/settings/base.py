@@ -146,5 +146,9 @@ AUTH_USER_MODEL = 'account.User'
 # URL of redirection upon logging out
 LOGOUT_REDIRECT_URL = 'student_login'
 
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 

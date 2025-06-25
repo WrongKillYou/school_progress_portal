@@ -56,7 +56,7 @@ class Student(models.Model):
 
     # Optional info
     address = models.TextField(blank=True)
-    photo = models.ImageField(upload_to='static/photos/student_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='photos/student_photos/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.level}-{self.section}"
@@ -76,7 +76,7 @@ class Teacher(models.Model):
     contact_email = models.EmailField(blank=True)
     contact_number = models.CharField(max_length=50, blank=True)
     address = models.TextField(blank=True)
-    photo = models.ImageField(upload_to='static/photos/teacher_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='photos/teacher_photos/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.department})"

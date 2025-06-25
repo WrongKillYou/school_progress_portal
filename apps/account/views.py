@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout as django_logout
+from datetime import date
 
 from account.models import Student, Teacher, User
 from account.forms import StudentLoginForm, TeacherLoginForm
@@ -7,9 +8,20 @@ from account.forms import StudentLoginForm, TeacherLoginForm
 from django.contrib.auth.decorators import login_required
 from config.decorators import role_required
 
+from account.models import Student
 from announcement.models import Announcement
 from classroom.models import Class, Enrollment
 from badge.models import BadgeShard
+
+from account.services import (
+    get_enrolled_classes,
+    get_recent_announcements,
+    build_grade_starplot,
+    get_monthly_attendance,
+    badge_breakdown,
+)
+
+
 
 # Create your views here.
 
@@ -33,10 +45,26 @@ def student_login(request):
 
 
 @login_required
-@role_required('student')
+@role_required("student")
 def student_dashboard(request):
-    # Display of student dashboard, landing page after login
-    return render(request, 'account/student/student_dashboard.html')
+    student = request.user.student_profile
+
+    classes              = get_enrolled_classes(student)
+    announcements        = get_recent_announcements(classes)
+    labels, values = build_grade_starplot(student, classes)
+    attendance_data     = get_monthly_attendance(student)
+    badge_ctx        = badge_breakdown(student)
+
+    context = {
+        "student": student,
+        "classes": classes,
+        "announcements": announcements,
+        "grade_labels": labels,
+        "grade_values": values,
+        "attendance_data": attendance_data,
+        **badge_ctx,
+    }
+    return render(request, "account/student/student_dashboard.html", context)
 
 
 def focus_personal_info():
