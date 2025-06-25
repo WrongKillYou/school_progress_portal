@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html' %}
+{% extends 'teacher_base.html' %}
 {% block title %}My Classes{% endblock %}
 {% block content %}
 <div class="container">
@@ -13,7 +13,6 @@
             <div class="card-body">
               <h5 class="card-title text-primary">{{ class.class_name }}</h5>
               <p class="mb-1"><strong>Subject:</strong> {{ class.subject }}</p>
-              <p><strong>Grade Level:</strong> {{ class.grade_level }}</p>
               <a href="{% url 'view_class_list' class.id %}" class="btn btn-sm btn-primary mt-2">View Students</a>
             </div>
           </div>

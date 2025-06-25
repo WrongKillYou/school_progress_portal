@@ -35,9 +35,13 @@ class ClassWithExtrasForm(forms.ModelForm):
             )
 
     def save(self, commit=True):
-        class_instance = super().save(commit=commit)
+    # Always get the instance but don’t rely on `commit`
+        class_instance = super().save(commit=False)   # <<< unsaved
+        class_instance.save()                         # <<< ensure it has a PK
 
-        # Save or update grading scheme
+    # -------------------------
+    #  now it’s safe to proceed
+    # -------------------------
         GradingScheme.objects.update_or_create(
             class_obj=class_instance,
             defaults={
@@ -47,22 +51,20 @@ class ClassWithExtrasForm(forms.ModelForm):
             }
         )
 
-        if commit:
-            selected_students = set(self.cleaned_data.get('enrolled_students', []))
-            current_enrollments = set(Enrollment.objects.filter(class_obj=class_instance))
-            current_students = set(e.student for e in current_enrollments)
+        selected_students = set(self.cleaned_data.get('enrolled_students', []))
+        current_enrollments = set(Enrollment.objects.filter(class_obj=class_instance))
+        current_students = {e.student for e in current_enrollments}
 
-            # Remove students no longer enrolled
-            for enrollment in current_enrollments:
-                if enrollment.student not in selected_students:
-                    enrollment.delete()
+        # Remove and add enrollments
+        for enrollment in current_enrollments:
+            if enrollment.student not in selected_students:
+                enrollment.delete()
 
-            # Add new enrollments
-            for student in selected_students:
-                if student not in current_students:
-                    Enrollment.objects.create(student=student, class_obj=class_instance)
+        for student in selected_students - current_students:
+            Enrollment.objects.create(student=student, class_obj=class_instance)
 
         return class_instance
+
 
 # ============================================
 # Admin Class
