@@ -7,6 +7,11 @@ from .models import User, Student, Teacher
 # Custom Forms for Creating Student & Teacher with User
 # ========================================
 
+admin.site.site_header = "School Progress Admin"         # Replaces "Django Administration" (top-left)
+admin.site.site_title = "School Portal Admin"            # Appears in browser tab title
+admin.site.index_title = "Welcome to the Admin Panel"    # Appears on the dashboard
+
+
 class StudentCreationForm(forms.ModelForm):
     # User fields
     username = forms.CharField()
