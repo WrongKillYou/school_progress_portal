@@ -8,7 +8,6 @@ from attendance.models import Attendance
 from badge.models import BadgeShard
 from classroom.models import Class
 from grade.models import FinalGrade
-from account.models import Student, User
 
 
 # ────────────────────────────────────────────────────────────

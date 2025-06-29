@@ -216,7 +216,7 @@ def download_file(request, class_id):
 
     # Download response
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="grade_template_{class_obj.class_name}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="grade_template_{class_obj.class_name}_{class_obj.subject}.xlsx"'
     wb.save(response)
     return response
 

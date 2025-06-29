@@ -21,20 +21,29 @@ from .models import Class, Enrollment
 # TEACHER 
 # # # # # # # # # # # # #
 
+from django.db.models import Q
+
 @login_required
 @role_required('teacher')
 def view_handled_class(request):
-    # View the list of handled class by the teacher
     user = request.user
     try:
-        teacher = user.teacher_profile  # This assumes OneToOneField from Teacher to User with related_name='teacher'
+        teacher = user.teacher_profile
     except Teacher.DoesNotExist:
         return render(request, 'error.html', {'message': 'Teacher not found.'})
 
+    query = request.GET.get('q', '')
     classes = Class.objects.filter(teacher=teacher)
+
+    if query:
+        classes = classes.filter(
+            Q(class_name__icontains=query) | Q(subject__icontains=query)
+        )
+
     return render(request, 'classroom/teacher/view_handled_class.html', {
         'teacher': teacher,
-        'classes': classes
+        'classes': classes,
+        'query': query  # Pass the query back to the template
     })
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
