@@ -1,0 +1,96 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+<script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+
+<!-- ─── Component‑scoped styles ─────────────────────────────────────── -->
+<style>
+/* ========== 1. GRID LAYOUT (three columns) ========================== */
+.dashboard-container{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);           /* left / middle / right */
+    grid-auto-rows:minmax(280px,auto);             /* each row ≥ 280 px     */
+    gap:10px;
+    max-width:1200px;
+    margin:0 auto;
+}
+
+/* Grid stacks for left / middle / right columns */
+.left-stack,
+.right-stack{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    height:100%;
+}
+.middle-stack{                                     /* avatar + name  */
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    padding:10px;
+    outline:2px dotted rgba(0,0,0,.4);             /* dotted border */
+    outline-offset:-2px;
+    border-radius:6px;
+}
+.name-box{margin-top:auto;text-align:center;}      /* push name to bottom */
+
+/* === shared “card” debug frame (can remove later) =================== */
+.star-plot,.announce,.calendar,.badge-box{
+    min-height:280px;max-height:280px;
+    overflow-y:auto;
+    outline:2px dashed rgba(0,0,0,.4);
+    outline-offset:-2px;
+}
+
+/* ========== 2. STAR‑PLOT (radar chart) ============================== */
+.star-plot{background:#e7f3ff;padding:20px;border-radius:8px;text-align:center;}
+.chart-wrap{width:100%;max-width:220px;height:220px;margin:0 auto;}
+
+/* ========== 3. ANNOUNCEMENTS ======================================= */
+.ann-list{margin:0;padding-left:18px}
+.ann-list li{margin-bottom:8px;list-style-type:disc}
+.ann-title{font-weight:600}
+
+/* ========== 4. BADGES (merit / demerit shards) ====================== */
+.badge-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.badge{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;width:70px;height:70px}
+.badge.star .shard{width:14px;height:14px;margin:2px;background:#ccc;
+    clip-path:polygon(50%0,61%35,98%35,68%57,79%91,50%70,21%91,32%57,2%35,39%35)}
+.badge.square .shard{width:30px;height:30px;margin:2px;background:#ccc}
+.badge .shard.active{background:gold}              /* merit  */
+.badge.square .shard.active{background:crimson}    /* demerit*/
+
+/* ========== 5. AVATAR ============================================== */
+.avatar{text-align:center}
+.avatar-img{width:120px;height:120px;border-radius:50%;object-fit:cover}
+
+/* ========== 6. FLATPICKR (attendance calendar) ===================== */
+.calendar-card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.05);text-align:center;max-height:280px;overflow:hidden}
+.flatpickr-calendar{max-height:200px !important;overflow-y:auto !important}
+.flatpickr-day{font-size:12px;line-height:1.2}
+/* attendance colours */
+.flatpickr-day.attendance-present {background:#28a745 !important;color:#fff !important;border-radius:50% !important}
+.flatpickr-day.attendance-absent  {background:#dc3545 !important;color:#fff !important;border-radius:50% !important}
+.flatpickr-day.attendance-incomplete{background:#ffc107 !important;color:#000 !important;border-radius:50% !important}
+/* ─── Star‑plot overlay window ─────────────────────────────── */
+.sp-overlay{
+    position:fixed;inset:0;display:none;justify-content:center;align-items:center;
+    backdrop-filter:blur(4px);background:rgba(0,0,0,.5);z-index:2000;
+}
+.sp-overlay.show{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.sp-window{
+    background:#fff;padding:20px 30px;border-radius:10px;
+    max-width:720px;width:95%;max-height:90vh;overflow:auto;
+    transform:scale(.8);animation:grow .25s forwards;
+}
+@keyframes grow{to{transform:scale(1)}}
+
+.sp-close{position:absolute;top:8px;right:14px;background:none;border:none;font-size:1.8rem;line-height:1}
+.sp-nav{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:10px}
+.sp-nav button{background:#eee;border:none;padding:4px 10px;font-weight:bold}
+#sp-subject-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+#sp-subject-list button{border:1px solid #ccc;background:#fafafa;padding:4px 8px;font-size:.9rem}
+
+</style>

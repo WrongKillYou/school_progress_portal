@@ -32,15 +32,33 @@ def get_recent_announcements(classes, limit=10):
 
 # ────────────────────────────────────────────────────────────
 # services/student_dashboard.py
-def build_grade_starplot(student, classes):
+# services.py
+
+def build_grade_starplot(student, classes, quarter=None):
+    """
+    Returns (labels, values) for the radar chart.
+    If quarter is provided (1–4), pulls that quarter’s final_grade.
+    If quarter is None, returns zeros (baseline) for each subject.
+    """
     labels, values = [], []
     for cls in classes:
-        grades = (FinalGrade.objects
-                  .filter(student=student, class_obj=cls)
-                  .order_by('-quarter'))          # newest first
-        if grades.exists():
-            labels.append(cls.subject)
-            values.append(grades.first().final_grade)
+        labels.append(cls.subject)
+
+        qs = FinalGrade.objects.filter(student=student, class_obj=cls)
+        if quarter is not None:
+            # fetch only that quarter
+            qs = qs.filter(quarter=quarter)
+        else:
+            # no quarter chosen → we’ll show baseline 0
+            values.append(0)
+            continue
+
+        fg = qs.first()
+        if fg and fg.final_grade is not None:
+            values.append(fg.final_grade)
+        else:
+            # no grade for that quarter → baseline
+            values.append(0)
     return labels, values
 
 

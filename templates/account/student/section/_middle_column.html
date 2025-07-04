@@ -1,0 +1,12 @@
+{% load static %}
+
+<section class="avatar">
+            {% if student.photo %}
+                <img src="{{ student.photo.url }}" class="avatar-img" alt="{{ student.user.get_full_name }}">
+            {% else %}
+                <img src="{% static 'images/no-image.png' %}" class="avatar-img" alt="Default avatar">
+            {% endif %}
+        </section>
+        <section class="name-box">
+            <p class="student-name">{{ student.user.get_full_name }}</p>
+        </section>

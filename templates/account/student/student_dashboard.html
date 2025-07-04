@@ -1,4 +1,4 @@
-{# templates/student/dashboard.html #}
+
 {% extends "student_base.html" %}
 {% load static %}
 
@@ -6,230 +6,33 @@
 
 {% block extra_css %}
 <!-- ─── External libraries ─────────────────────────────────────────── -->
-<link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
-<script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
-
-<!-- ─── Component‑scoped styles ─────────────────────────────────────── -->
-<style>
-/* ========== 1. GRID LAYOUT (three columns) ========================== */
-.dashboard-container{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);           /* left / middle / right */
-    grid-auto-rows:minmax(280px,auto);             /* each row ≥ 280 px     */
-    gap:10px;
-    max-width:1200px;
-    margin:0 auto;
-}
-
-/* Grid stacks for left / middle / right columns */
-.left-stack,
-.right-stack{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    height:100%;
-}
-.middle-stack{                                     /* avatar + name  */
-    display:flex;
-    flex-direction:column;
-    height:100%;
-    padding:10px;
-    outline:2px dotted rgba(0,0,0,.4);             /* dotted border */
-    outline-offset:-2px;
-    border-radius:6px;
-}
-.name-box{margin-top:auto;text-align:center;}      /* push name to bottom */
-
-/* === shared “card” debug frame (can remove later) =================== */
-.star-plot,.announce,.calendar,.badge-box{
-    min-height:280px;max-height:280px;
-    overflow-y:auto;
-    outline:2px dashed rgba(0,0,0,.4);
-    outline-offset:-2px;
-}
-
-/* ========== 2. STAR‑PLOT (radar chart) ============================== */
-.star-plot{background:#e7f3ff;padding:20px;border-radius:8px;text-align:center;}
-.chart-wrap{width:100%;max-width:220px;height:220px;margin:0 auto;}
-
-/* ========== 3. ANNOUNCEMENTS ======================================= */
-.ann-list{margin:0;padding-left:18px}
-.ann-list li{margin-bottom:8px;list-style-type:disc}
-.ann-title{font-weight:600}
-
-/* ========== 4. BADGES (merit / demerit shards) ====================== */
-.badge-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.badge{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;width:70px;height:70px}
-.badge.star .shard{width:14px;height:14px;margin:2px;background:#ccc;
-    clip-path:polygon(50%0,61%35,98%35,68%57,79%91,50%70,21%91,32%57,2%35,39%35)}
-.badge.square .shard{width:30px;height:30px;margin:2px;background:#ccc}
-.badge .shard.active{background:gold}              /* merit  */
-.badge.square .shard.active{background:crimson}    /* demerit*/
-
-/* ========== 5. AVATAR ============================================== */
-.avatar{text-align:center}
-.avatar-img{width:120px;height:120px;border-radius:50%;object-fit:cover}
-
-/* ========== 6. FLATPICKR (attendance calendar) ===================== */
-.calendar-card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.05);text-align:center;max-height:280px;overflow:hidden}
-.flatpickr-calendar{max-height:200px !important;overflow-y:auto !important}
-.flatpickr-day{font-size:12px;line-height:1.2}
-/* attendance colours */
-.flatpickr-day.attendance-present {background:#28a745 !important;color:#fff !important;border-radius:50% !important}
-.flatpickr-day.attendance-absent  {background:#dc3545 !important;color:#fff !important;border-radius:50% !important}
-.flatpickr-day.attendance-incomplete{background:#ffc107 !important;color:#000 !important;border-radius:50% !important}
-</style>
+    {% include "account/student/section/dash_styles.html" %}
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- Star‑plot overlay / modal -->
+    {% include "account/student/modal/_starplot_modal.html" %}
 
     <!-- ── Left column ─────────────────────────────────────────────── -->
     <div class="left-stack">
-        <!-- Star plot -->
-        <section class="star-plot">
-            <h5>Star Plot</h5>
-            {% if grade_labels %}
-                <div class="chart-wrap">
-                    <canvas id="gradeRadarChart" width="220" height="220"
-                            aria-label="Radar chart of final grades"></canvas>
-                </div>
-            {% else %}
-                <p class="text-muted">No grades yet.</p>
-            {% endif %}
-        </section>
-
-        <!-- Announcements -->
-        <section class="announce">
-            <h5>Announcements</h5>
-            {% if announcements %}
-                <ul class="ann-list">
-                    {% for ann in announcements %}
-                        <li>
-                            <span class="ann-title">{{ ann.title }}</span><br>
-                            <small class="text-muted">
-                                {{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }}
-                                | {{ ann.date_posted|date:"M d, Y g:i A" }}
-                            </small>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted m-0">No announcements available.</p>
-            {% endif %}
-        </section>
+       {% include "account/student/section/_left_column.html" %}
     </div>
 
     <!-- ── Middle column (avatar + name) ───────────────────────────── -->
     <div class="middle-stack">
-        <section class="avatar">
-            {% if student.photo %}
-                <img src="{{ student.photo.url }}" class="avatar-img" alt="{{ student.user.get_full_name }}">
-            {% else %}
-                <img src="{% static 'images/no-image.png' %}" class="avatar-img" alt="Default avatar">
-            {% endif %}
-        </section>
-        <section class="name-box">
-            <p class="student-name">{{ student.user.get_full_name }}</p>
-        </section>
+        {% include "account/student/section/_middle_column.html" %}
     </div>
 
     <!-- ── Right column ────────────────────────────────────────────── -->
     <div class="right-stack">
-        <!-- Calendar -->
-        <section class="calendar">
-            <div class="calendar-card">
-                <h5>Attendance</h5>
-                <input id="calendar" type="text" placeholder="Attendance"
-                       readonly style="width:100%;cursor:pointer;
-                       background:#f9f9f9;border:none;text-align:center;font-weight:bold;">
-            </div>
-        </section>
-
-        <!-- Badges -->
-        <section class="badge-box">
-            <h5>Badges</h5>
-            <div class="badge-grid">
-                {# full merit stars #}
-                {% for _ in full_stars %}
-                    <div class="badge star">{% for _ in "12345" %}<div class="shard active"></div>{% endfor %}</div>
-                {% endfor %}
-                {# partial merit star #}
-                {% if star_fragments %}
-                    <div class="badge star">
-                        {% for i in "12345" %}
-                            <div class="shard {% if forloop.counter <= star_fragments %}active{% endif %}"></div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                {# full demerit squares #}
-                {% for _ in full_squares %}
-                    <div class="badge square">{% for _ in "1234" %}<div class="shard active"></div>{% endfor %}</div>
-                {% endfor %}
-                {# partial demerit square #}
-                {% if square_fragments %}
-                    <div class="badge square">
-                        {% for i in "1234" %}
-                            <div class="shard {% if forloop.counter <= square_fragments %}active{% endif %}"></div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </section>
+        {% include "account/student/section/_right_column.html" %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <!-- ─── External libraries ─────────────────────────────────────────── -->
-<script src="{% static 'js/chart.umd.min.js' %}"></script>
-<script src="{% static 'js/flatpickr.min.js' %}"></script>
+    {% include "account/student/section/dash_scripts.html" %}
 
-{{ grade_labels|json_script:"grade-labels" }}
-{{ grade_values|json_script:"grade-values" }}
-{{ attendance_data|json_script:"attendance-json" }}
-
-<script>
-/* ===== 1. Radar chart (Chart.js) =================================== */
-(() => {
-    const labels = JSON.parse(document.getElementById('grade-labels').textContent || '[]');
-    if (!labels.length) return;
-
-    const values = JSON.parse(document.getElementById('grade-values').textContent || '[]');
-    const ctx     = document.getElementById('gradeRadarChart').getContext('2d');
-
-    window.gradeChart = new Chart(ctx,{
-        type:'radar',
-        data:{labels:labels,datasets:[{
-            label:'Final Grade',
-            data:values,
-            backgroundColor:'rgba(54,162,235,.2)',
-            borderColor:'rgba(54,162,235,1)',
-            borderWidth:2,pointRadius:3
-        }]},
-        options:{
-            responsive:false,maintainAspectRatio:false,
-            scales:{r:{min:70,max:100,ticks:{stepSize:5}}},
-            plugins:{legend:{display:false}}
-        }
-    });
-})();
-
-/* ===== 2. Attendance calendar (Flatpickr) ========================== */
-(() => {
-    const records = JSON.parse(document.getElementById('attendance-json').textContent || '[]');
-
-    flatpickr('#calendar',{
-        inline:true,disableMobile:true,
-        onDayCreate(_,__,___,day){
-            const date = day.dateObj.toISOString().split('T')[0];
-            const rec  = records.find(r=>r.date===date);
-            if(!rec) return;
-            day.classList.add('attendance-'+rec.status);
-            day.title = rec.status.charAt(0).toUpperCase()+rec.status.slice(1);
-        }
-    });
-})();
-</script>
 {% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 
 import json
 from django.utils.timezone import now
-from datetime import date
+from datetime import date, datetime
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -33,43 +33,57 @@ def focus_attendance(request):
 @login_required
 @role_required('teacher')
 def scan_attendance(request):
-    # Scan the student's QR code to register attendance; first scan (time-in) and second scan (timeout)
-    if request.method == 'POST':
-        lrn = request.POST.get('lrn')
-        class_id = request.POST.get('class_id')  # optional if scanning in a known context
-
-        try:
-            student = Student.objects.get(lrn=lrn)
-        except Student.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Student not found'})
-
-        class_obj = get_object_or_404(Class, id=class_id)
-
-        today = date.today()
-        attendance, created = Attendance.objects.get_or_create(
-            student=student,
-            class_obj=class_obj,
-            date=today,
-            defaults={'time_in': now().time(), 'status': 'incomplete'}
-        )
-
-        if not created:
-            if attendance.time_out is None:
-                attendance.time_out = now().time()
-                attendance.status = 'present'
-                attendance.save()
-                return JsonResponse({'success': True, 'message': 'Time-out recorded'})
-            else:
-                return JsonResponse({'success': False, 'message': 'Attendance already complete'})
-        else:
-            # First scan recorded (time_in only)
-            attendance.status = 'incomplete'
-            attendance.save()
-            return JsonResponse({'success': True, 'message': 'Time-in recorded'})
-
-    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    teacher = request.user.teacher_profile
+    classes = Class.objects.filter(teacher=teacher)
+    return render(request, 'attendance/teacher/scan_attendance.html', {'classes': classes})
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+@login_required
+@role_required('teacher')
+def register_attendance(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            lrn = data.get('lrn')
+            class_id = data.get('class_id')
+
+            if not class_id:
+                return JsonResponse({'status': 'danger', 'message': 'Class not selected'})
+
+            student = Student.objects.get(lrn=lrn)
+            class_obj = Class.objects.get(id=class_id)
+
+            # Check enrollment
+            if not Enrollment.objects.filter(student=student, class_obj=class_obj).exists():
+                return JsonResponse({'status': 'danger', 'message': f"{student.user.get_full_name()} is not enrolled in this class."})
+
+            # Proceed with attendance logic
+            today = date.today()
+            now = datetime.now().time()
+            attendance, created = Attendance.objects.get_or_create(
+                student=student,
+                class_obj=class_obj,
+                date=today,
+                defaults={'time_in': now}
+            )
+
+            if not created:
+                if not attendance.time_out:
+                    attendance.time_out = now
+                    attendance.save()
+                    return JsonResponse({'status': 'success', 'message': f'Time-out for {student.user.get_full_name()} complete.'})
+                else:
+                    return JsonResponse({'status': 'info', 'message': 'Both time-in and time-out already recorded.'})
+            else:
+                return JsonResponse({'status': 'success', 'message': f'Time-in for {student.user.get_full_name()} complete.'})
+
+        except Student.DoesNotExist:
+            return JsonResponse({'status': 'danger', 'message': 'Invalid or unknown LRN.'})
+        except Exception as e:
+            return JsonResponse({'status': 'danger', 'message': str(e)})
+
 
 @login_required
 @role_required('teacher')

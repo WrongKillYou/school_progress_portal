@@ -1,0 +1,134 @@
+{% extends 'teacher_base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+
+  video {
+  transform: scaleX(-1);
+}
+</style>
+
+<div class="container mt-5">
+  <h2 class="mb-4">📷 Scan Attendance</h2>
+
+  <!-- Class Dropdown -->
+  <div class="form-group mb-3">
+    <label for="classSelect">Select Class:</label>
+    <select class="form-control" id="classSelect">
+      <option value="">-- Choose a class --</option>
+      {% for class in classes %}
+        <option value="{{ class.id }}">{{ class.class_name }} - {{ class.subject }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- QR Scanner -->
+  <div id="qr-reader" style="width: 400px;"></div>
+
+  <!-- Result -->
+  <div id="scanResult" class="mt-4"></div>
+</div>
+
+<script src="{% static 'js/html5-qrcode.min.js' %}" defer></script>
+<script>
+let scanner;
+let isScanning = false;
+let cameraList = [];
+let currentCameraIndex = 0;
+const qrRegionId = "qr-reader";
+
+function handleScanSuccess(lrn) {
+  const classId = document.getElementById('classSelect').value;
+  if (!classId) {
+    document.getElementById('scanResult').innerHTML = `
+      <div class="alert alert-warning">Please select a class before scanning.</div>
+    `;
+    return;
+  }
+
+  if (isScanning) return;
+  isScanning = true;
+
+  fetch("{% url 'register_attendance' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ lrn: lrn.trim(), class_id: classId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const alertClass = data.status === 'success' ? 'success' : data.status === 'info' ? 'info' : 'danger';
+    document.getElementById('scanResult').innerHTML = `
+      <div class="alert alert-${alertClass}">${data.message}</div>
+    `;
+    setTimeout(() => { isScanning = false }, 2000);
+  });
+}
+
+function startScannerWithDevice(deviceId) {
+  if (scanner) {
+    scanner.stop().then(() => {
+      scanner.start(
+        deviceId,
+        { fps: 10, qrbox: 250 },
+        (decodedText) => handleScanSuccess(decodedText),
+        (errorMessage) => {}
+      );
+    }).catch(err => console.error("Failed to stop scanner", err));
+  } else {
+    scanner = new Html5Qrcode(qrRegionId);
+    scanner.start(
+      deviceId,
+      { fps: 10, qrbox: 250 },
+      (decodedText) => handleScanSuccess(decodedText),
+      (errorMessage) => {}
+    );
+  }
+}
+
+function flipCamera() {
+  if (cameraList.length > 1) {
+    currentCameraIndex = (currentCameraIndex + 1) % cameraList.length;
+    const newCameraId = cameraList[currentCameraIndex].id;
+    startScannerWithDevice(newCameraId);
+  } else {
+    alert("No other camera available to switch to.");
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      cameraList = devices;
+      currentCameraIndex = 0;
+      const firstCameraId = devices[0].id;
+
+      // Create flip button
+      const flipBtn = document.createElement("button");
+      flipBtn.className = "btn btn-secondary my-3";
+      flipBtn.innerText = "🔄 Flip Camera";
+      flipBtn.onclick = flipCamera;
+      document.getElementById("qr-reader").before(flipBtn);
+
+      startScannerWithDevice(firstCameraId);
+    } else {
+      document.getElementById("scanResult").innerHTML = `
+        <div class="alert alert-danger">No camera found on this device.</div>
+      `;
+    }
+  }).catch(err => {
+    console.error("Camera access error:", err);
+    document.getElementById("scanResult").innerHTML = `
+      <div class="alert alert-danger">Camera access failed. Check permissions.</div>
+    `;
+  });
+});
+</script>
+
+
+
+{% endblock %}

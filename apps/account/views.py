@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout as django_logout
 from datetime import date
+import json
 
 from account.models import Student, Teacher, User
 from account.forms import StudentLoginForm, TeacherLoginForm
@@ -12,6 +13,7 @@ from account.models import Student
 from announcement.models import Announcement
 from classroom.models import Class, Enrollment
 from badge.models import BadgeShard
+from grade.models import GradeItem, FinalGrade
 
 from account.services import (
     get_enrolled_classes,
@@ -49,11 +51,40 @@ def student_login(request):
 def student_dashboard(request):
     student = request.user.student_profile
 
-    classes              = get_enrolled_classes(student)
-    announcements        = get_recent_announcements(classes)
-    labels, values = build_grade_starplot(student, classes)
-    attendance_data     = get_monthly_attendance(student)
-    badge_ctx        = badge_breakdown(student)
+    classes           = get_enrolled_classes(student)
+    announcements     = get_recent_announcements(classes)
+    labels, values    = build_grade_starplot(student, classes)
+    attendance_data   = get_monthly_attendance(student)
+    badge_ctx         = badge_breakdown(student)
+
+    # ⭐ Build detail = {subject: {"1": {...}, "2": {...}}}
+    detail = {}
+    finals = (
+        FinalGrade.objects
+        .filter(student=student)
+        .select_related("class_obj")
+    )
+
+    for fg in finals:
+        # ensure final_grade is populated
+        if fg.final_grade is None:
+            fg.compute_final_grade()
+
+        subj = fg.class_obj.subject
+        qtr  = str(fg.quarter)          # JSON keys must be strings
+
+        detail.setdefault(subj, {})[qtr] = {
+            "final": fg.final_grade,
+            "components": list(
+                GradeItem.objects
+                .filter(
+                    student=student,
+                    class_obj=fg.class_obj,
+                    quarter=fg.quarter
+                )
+                .values("component", "score", "highest_possible_score")
+            )
+        }
 
     context = {
         "student": student,
@@ -62,10 +93,14 @@ def student_dashboard(request):
         "grade_labels": labels,
         "grade_values": values,
         "attendance_data": attendance_data,
+        "starplot_detail_json": json.dumps(detail),
         **badge_ctx,
     }
-    return render(request, "account/student/student_dashboard.html", context)
-
+    return render(
+        request,
+        "account/student/student_dashboard.html",
+        context
+    )
 
 def focus_personal_info():
     # Upon clicking the name window, focus the avatar and basic info of the student

@@ -1,0 +1,33 @@
+ <!-- Star plot -->
+{% load static %}
+        <section class="star-plot" id="starplot-launcher" style="cursor:pointer">
+    <h5>Star Plot</h5>
+    {% if grade_labels %}
+        <div class="chart-wrap">
+            <canvas id="gradeRadarChart" width="220" height="220"
+                    aria-label="Radar chart of final grades"></canvas>
+        </div>
+    {% else %}
+        <p class="text-muted">No grades yet.</p>
+    {% endif %}
+</section>
+
+        <!-- Announcements -->
+        <section class="announce">
+            <h5>Announcements</h5>
+            {% if announcements %}
+                <ul class="ann-list">
+                    {% for ann in announcements %}
+                        <li>
+                            <span class="ann-title">{{ ann.title }}</span><br>
+                            <small class="text-muted">
+                                {{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }}
+                                | {{ ann.date_posted|date:"M d, Y g:i A" }}
+                            </small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted m-0">No announcements available.</p>
+            {% endif %}
+        </section>
