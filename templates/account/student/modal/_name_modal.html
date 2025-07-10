@@ -1,0 +1,28 @@
+<!-- _name_modal.html -->
+<div id="name-modal" class="calendar-overlay hidden">
+  <div class="calendar-window" @click.away="showModal = false">
+    <button class="calendar-close" id="name-close">&times;</button>
+    <h5 class="mb-3 fw-bold">👤 Student Profile</h5>
+
+    <ul class="list-unstyled">
+      <li><strong>Name:</strong> {{ student.user.get_full_name }}</li>
+      <li><strong>LRN:</strong> {{ student.lrn }}</li>
+      <li><strong>Level & Section:</strong> {{ student.level }} - {{ student.section }}</li>
+      <li><strong>Sex:</strong> {{ student.sex|title }}</li>
+      <li><strong>Birthdate:</strong>
+        {% if student.birth_date %}
+          {{ student.birth_date|date:"F d, Y" }}
+        {% else %}
+          N/A
+        {% endif %}
+      </li>
+      <li><strong>Address:</strong>
+        {% if student.address %}
+          {{ student.address }}
+        {% else %}
+          Not Provided
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</div>

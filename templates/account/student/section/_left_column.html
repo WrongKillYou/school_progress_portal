@@ -13,21 +13,27 @@
 </section>
 
         <!-- Announcements -->
-        <section class="announce">
-            <h5>Announcements</h5>
-            {% if announcements %}
-                <ul class="ann-list">
-                    {% for ann in announcements %}
-                        <li>
-                            <span class="ann-title">{{ ann.title }}</span><br>
-                            <small class="text-muted">
-                                {{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }}
-                                | {{ ann.date_posted|date:"M d, Y g:i A" }}
-                            </small>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted m-0">No announcements available.</p>
-            {% endif %}
-        </section>
+        
+<section class="announce">
+    <h5>Announcements</h5>
+    {% if announcements %}
+        <ul class="ann-list">
+            {% for ann in announcements %}
+                <li class="announcement-item"
+    data-ann-title="{{ ann.title|escapejs }}"
+    data-ann-meta="{{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }} | {{ ann.date_posted|date:'M d, Y g:i A' }}"
+    data-ann-content="{{ ann.content|escapejs }}">
+
+
+                    <span class="ann-title" style="cursor:pointer;">{{ ann.title }}</span><br>
+                    <small class="text-muted">
+                        {{ ann.class_obj.class_name }} – {{ ann.class_obj.subject }}
+                        | {{ ann.date_posted|date:"M d, Y g:i A" }}
+                    </small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted m-0">No announcements available.</p>
+    {% endif %}
+</section>

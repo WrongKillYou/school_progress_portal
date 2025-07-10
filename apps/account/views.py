@@ -86,6 +86,10 @@ def student_dashboard(request):
             )
         }
 
+    merit_shards = BadgeShard.objects.filter(student=student, type="merit")
+    demerit_shards = BadgeShard.objects.filter(student=student, type="demerit")
+
+
     context = {
         "student": student,
         "classes": classes,
@@ -95,6 +99,8 @@ def student_dashboard(request):
         "attendance_data": attendance_data,
         "starplot_detail_json": json.dumps(detail),
         **badge_ctx,
+        "merit_shards": merit_shards,
+        "demerit_shards": demerit_shards,
     }
     return render(
         request,

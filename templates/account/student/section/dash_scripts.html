@@ -243,3 +243,111 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const annItems = document.querySelectorAll(".announcement-item");
+  const modal    = document.getElementById("announcement-modal");
+  const closeBtn = document.getElementById("announcement-close");
+  const title    = document.getElementById("ann-modal-title");
+  const meta     = document.getElementById("ann-modal-meta");
+  const body     = document.getElementById("ann-modal-body");
+
+  annItems.forEach(item => {
+  item.addEventListener("click", () => {
+    title.textContent = item.dataset.annTitle;
+    meta.textContent = item.dataset.annMeta;
+
+    // Decode escaped JS string (e.g., \u000A → newline)
+    const content = JSON.parse(`"${item.dataset.annContent}"`);
+    body.innerHTML = content.replace(/\n/g, "<br>");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  });
+});
+
+  closeBtn.addEventListener("click", () => {
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.remove("flex");
+      modal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const badgeTrigger = document.getElementById("badgeModalTrigger");
+  const badgeModal   = document.getElementById("badge-modal");
+  const badgeClose   = document.getElementById("badge-close");
+
+  if (!badgeTrigger || !badgeModal || !badgeClose) {
+    console.warn("Badge modal elements not found.");
+    return;
+  }
+
+  badgeTrigger.addEventListener("click", () => {
+    badgeModal.classList.remove("hidden");
+    badgeModal.classList.add("flex");
+  });
+
+  badgeClose.addEventListener("click", () => {
+    badgeModal.classList.remove("flex");
+    badgeModal.classList.add("hidden");
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === badgeModal) {
+      badgeModal.classList.remove("flex");
+      badgeModal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const nameTrigger = document.getElementById("nameModalTrigger");
+  const nameModal   = document.getElementById("name-modal");
+  const nameClose   = document.getElementById("name-close");
+
+  if (!nameTrigger || !nameModal || !nameClose) {
+    console.warn("Name modal elements not found.");
+    return;
+  }
+
+  nameTrigger.addEventListener("click", () => {
+    nameModal.classList.remove("hidden");
+    nameModal.classList.add("flex");
+  });
+
+  nameClose.addEventListener("click", () => {
+    nameModal.classList.remove("flex");
+    nameModal.classList.add("hidden");
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === nameModal) {
+      nameModal.classList.remove("flex");
+      nameModal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+
+
+
+

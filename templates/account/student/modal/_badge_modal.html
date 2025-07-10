@@ -1,0 +1,43 @@
+<!-- _badge_modal.html -->
+<div id="badge-modal" class="calendar-overlay hidden" x-data="{
+  showModal: false,
+  merit: {{ merit_shards|safe }},
+  demerit: {{ demerit_shards|safe }},
+}">
+  <div class="calendar-window" @click.away="showModal = false">
+    <button class="calendar-close" id="badge-close">&times;</button>
+    <h5 class="mb-3 fw-bold">🎖️ My Badges</h5>
+
+    <!-- MERIT SHARDS -->
+    <div class="mb-4">
+      <h6 class="text-primary mb-2">⭐ Merit Badge Progress</h6>
+      {% for shard in merit_shards %}
+        <span class="position-relative d-inline-block me-1 mb-1">
+          <div class="shard merit">
+            ★
+            <div class="tooltip">{{ shard.reason }}</div>
+          </div>
+        </span>
+      {% endfor %}
+      {% for i in empty_merit %}
+        <span class="shard">★</span>
+      {% endfor %}
+    </div>
+
+    <!-- DEMERIT SHARDS -->
+    <div class="mb-2">
+      <h6 class="text-danger mb-2">🟥 Demerit Badge Progress</h6>
+      {% for shard in demerit_shards %}
+        <span class="position-relative d-inline-block me-1 mb-1">
+          <div class="shard demerit">
+            ■
+            <div class="tooltip">{{ shard.reason }}</div>
+          </div>
+        </span>
+      {% endfor %}
+      {% for i in empty_demerit %}
+        <span class="shard">■</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>

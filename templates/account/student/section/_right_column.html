@@ -14,33 +14,33 @@
 
 
         <!-- Badges -->
-        <section class="badge-box">
-            <h5>Badges</h5>
-            <div class="badge-grid">
-                {# full merit stars #}
-                {% for _ in full_stars %}
-                    <div class="badge star">{% for _ in "12345" %}<div class="shard active"></div>{% endfor %}</div>
-                {% endfor %}
-                {# partial merit star #}
-                {% if star_fragments %}
-                    <div class="badge star">
-                        {% for i in "12345" %}
-                            <div class="shard {% if forloop.counter <= star_fragments %}active{% endif %}"></div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+<section class="badge-box" id="badgeModalTrigger" style="cursor: pointer;">
+  <h5>Badges</h5>
+  <div class="badge-grid">
+    {# full merit stars #}
+    {% for _ in full_stars %}
+      <div class="badge star">{% for _ in "12345" %}<div class="shard active"></div>{% endfor %}</div>
+    {% endfor %}
+    {# partial merit star #}
+    {% if star_fragments %}
+      <div class="badge star">
+        {% for i in "12345" %}
+          <div class="shard {% if forloop.counter <= star_fragments %}active{% endif %}"></div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-                {# full demerit squares #}
-                {% for _ in full_squares %}
-                    <div class="badge square">{% for _ in "1234" %}<div class="shard active"></div>{% endfor %}</div>
-                {% endfor %}
-                {# partial demerit square #}
-                {% if square_fragments %}
-                    <div class="badge square">
-                        {% for i in "1234" %}
-                            <div class="shard {% if forloop.counter <= square_fragments %}active{% endif %}"></div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </section>
+    {# full demerit squares #}
+    {% for _ in full_squares %}
+      <div class="badge square">{% for _ in "1234" %}<div class="shard active"></div>{% endfor %}</div>
+    {% endfor %}
+    {# partial demerit square #}
+    {% if square_fragments %}
+      <div class="badge square">
+        {% for i in "1234" %}
+          <div class="shard {% if forloop.counter <= square_fragments %}active{% endif %}"></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>

@@ -7,6 +7,11 @@
                 <img src="{% static 'images/no-image.png' %}" class="avatar-img" alt="Default avatar">
             {% endif %}
         </section>
-        <section class="name-box">
-            <p class="student-name">{{ student.user.get_full_name }}</p>
-        </section>
+
+        
+        <section class="name-box" id="nameModalTrigger" style="cursor: pointer;">
+    <p class="student-name">{{ student.user.get_full_name }}</p>
+</section>
+
+
+        
