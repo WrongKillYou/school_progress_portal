@@ -10,9 +10,12 @@
 {% endblock %}
 
 {% block content %}
+
+{% include "account/student/modal/_starplot_modal.html" %}
+{% include "account/student/modal/_calendar_modal.html" %}
 <div class="dashboard-container">
     <!-- Star‑plot overlay / modal -->
-    {% include "account/student/modal/_starplot_modal.html" %}
+
 
     <!-- ── Left column ─────────────────────────────────────────────── -->
     <div class="left-stack">

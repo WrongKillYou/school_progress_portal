@@ -57,6 +57,26 @@
         }
     });
 })();
+
+(() => {
+    const records = JSON.parse(
+        document.getElementById("attendance-json").textContent || "[]"
+    );
+
+    // Modal version of Flatpickr
+    flatpickr("#calendar-modal-input", {
+        inline: true,
+        disableMobile: true,
+        onDayCreate(_,__,___,day) {
+            const date = day.dateObj.toISOString().split("T")[0];
+            const rec  = records.find(r => r.date === date);
+            if (!rec) return;
+            day.classList.add("attendance-" + rec.status);
+            day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
+        }
+    });
+})();
+
 </script>
 
 <!-- ════════════════ 3. STAR‑PLOT MODAL (per quarter) ═══════════════ -->
@@ -191,3 +211,35 @@
     );
 })();
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const calendarTrigger = document.getElementById("calendarModalTrigger");
+  const calendarModal = document.getElementById("calendar-modal");
+  const calendarClose = document.querySelector(".calendar-close");
+
+  if (!calendarTrigger || !calendarModal || !calendarClose) {
+    console.warn("Calendar modal elements not found.");
+    return;
+  }
+
+  calendarTrigger.addEventListener("click", () => {
+    calendarModal.classList.remove("hidden");
+    calendarModal.classList.add("flex");
+  });
+
+  calendarClose.addEventListener("click", () => {
+    calendarModal.classList.remove("flex");
+    calendarModal.classList.add("hidden");
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === calendarModal) {
+      calendarModal.classList.remove("flex");
+      calendarModal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+
