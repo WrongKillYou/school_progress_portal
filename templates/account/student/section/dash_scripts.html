@@ -10,132 +10,21 @@
 {{ starplot_detail_json|json_script:"starplot_detail_json" }}
 
 <script>
-/* ═════════════════ 1. Small radar chart (latest quarter) ═══════════ */
+/* ═════════════════ 1. Small Radar Chart (Latest Quarter) ══════════ */
 (() => {
-    const labels = JSON.parse(
-        document.getElementById("grade-labels").textContent || "[]"
-    );
-    if (!labels.length) return;
+    const labels = JSON.parse(document.getElementById("grade-labels").textContent || "[]");
+    const values = JSON.parse(document.getElementById("grade-values").textContent || "[]");
+    if (!labels.length || !values.length) return;
 
-    const values = JSON.parse(
-        document.getElementById("grade-values").textContent || "[]"
-    );
     const ctx = document.getElementById("gradeRadarChart").getContext("2d");
 
     window.gradeChart = new Chart(ctx, {
         type: "radar",
-        data: { labels, datasets: [{
-            data: values,
-            label: "Final Grade",
-            backgroundColor: "rgba(54,162,235,.2)",
-            borderColor:   "rgba(54,162,235,1)",
-            borderWidth: 2, pointRadius: 3
-        }]},
-        options: {
-            responsive: false,
-            maintainAspectRatio: false,
-            scales: { r: { min: 70, max: 100, ticks: { stepSize: 5 } } },
-            plugins: { legend: { display: false } }
-        }
-    });
-})();
-
-/* ═════════════════ 2. Attendance calendar (Flatpickr) ══════════════ */
-(() => {
-    const records = JSON.parse(
-        document.getElementById("attendance-json").textContent || "[]"
-    );
-
-    flatpickr("#calendar", {
-        inline: true, disableMobile: true,
-        onDayCreate(_,__,___,day) {
-            const date = day.dateObj.toISOString().split("T")[0];
-            const rec  = records.find(r => r.date === date);
-            if (!rec) return;
-            day.classList.add("attendance-" + rec.status);
-            day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
-        }
-    });
-})();
-
-(() => {
-    const records = JSON.parse(
-        document.getElementById("attendance-json").textContent || "[]"
-    );
-
-    // Modal version of Flatpickr
-    flatpickr("#calendar-modal-input", {
-        inline: true,
-        disableMobile: true,
-        onDayCreate(_,__,___,day) {
-            const date = day.dateObj.toISOString().split("T")[0];
-            const rec  = records.find(r => r.date === date);
-            if (!rec) return;
-            day.classList.add("attendance-" + rec.status);
-            day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
-        }
-    });
-})();
-
-</script>
-
-<!-- ════════════════ 3. STAR‑PLOT MODAL (per quarter) ═══════════════ -->
-<script>
-(() => {
-    /* ── Data & State ────────────────────────────────────────────── */
-    const detail   = JSON.parse(
-        document.getElementById("starplot_detail_json").textContent
-    );                                  // { subj: {"1":{…},"2":{…}} }
-    const subjects = Object.keys(detail);
-    console.log("DETAIL from Django:", detail);
-    console.log("Subjects detected:", subjects);
-
-    let quarter    = 1;
-    let bigChart;
-
-    /* ── DOM references ──────────────────────────────────────────── */
-    const modal     = document.getElementById("starplot-modal");
-    const bigCtx    = document.getElementById("sp-big-chart").getContext("2d");
-    const qLabel    = document.getElementById("sp-quarter-label");
-    const subjList  = document.getElementById("sp-subject-list");
-    const compPanel = document.getElementById("sp-component-panel");
-    const compTitle = document.getElementById("sp-comp-title");
-    const compBody  = document.querySelector("#sp-comp-table tbody");
-
-    /* ── Build subject buttons once ─────────────────────────────── */
-    subjList.innerHTML = "";
-    subjects.forEach(s => {
-        const btn = document.createElement("button");
-        btn.textContent = s;
-        btn.addEventListener("click", () => showComponents(s));
-        subjList.appendChild(btn);
-    });
-
-    /* ── Radar rebuild ───────────────────────────────────────────── */
-    function rebuildChart() {
-    const labels = [];
-    const data   = [];
-
-    subjects.forEach(subject => {
-        const qData = detail[subject]?.[String(quarter)];
-
-        labels.push(subject);
-
-        let val = parseFloat(qData?.final);
-        if (!Number.isFinite(val)) val = 0;
-        val = Math.max(0, Math.min(100, val));  // clamp 0–100
-        data.push(val);
-    });
-
-    if (bigChart) bigChart.destroy();
-
-    bigChart = new Chart(bigCtx, {
-        type: "radar",
         data: {
-            labels: labels,
+            labels,
             datasets: [{
+                data: values,
                 label: "Final Grade",
-                data: data,
                 backgroundColor: "rgba(54,162,235,0.2)",
                 borderColor: "rgba(54,162,235,1)",
                 borderWidth: 2,
@@ -143,76 +32,147 @@
             }]
         },
         options: {
-            responsive: false,
-            maintainAspectRatio: false,
+            responsive: true,
+            maintainAspectRatio: true,
             scales: {
                 r: {
                     min: 70,
                     max: 100,
-                    ticks: { stepSize: 5 },
-                    pointLabels: { font: { size: 12 } }
+                    ticks: { stepSize: 5 }
                 }
             },
-            plugins: {
-                legend: { display: false }
-            }
+            plugins: { legend: { display: false } }
         }
     });
-
-    qLabel.textContent = "Quarter " + quarter;
-    compPanel.hidden = true;
-
-    console.log("DETAIL DATA:", detail);
-
-}
-
-
-    /* ── Component breakdown table ──────────────────────────────── */
-    function showComponents(subj) {
-        const qData = detail[subj]?.[String(quarter)];
-        if (!qData) return;
-
-        compTitle.textContent = `${subj} – Q${quarter}`;
-        compBody.innerHTML = qData.components.map(c => {
-            const pct = (c.score / c.highest_possible_score * 100).toFixed(1);
-            return `<tr>
-                        <td>${c.component}</td>
-                        <td>${c.score}/${c.highest_possible_score}</td>
-                        <td>${pct}%</td>
-                    </tr>`;
-        }).join("");
-
-        compPanel.hidden = false;
-    }
-
-    /* ── Quarter navigation ─────────────────────────────────────── */
-    document.getElementById("sp-prev").addEventListener("click", () => {
-        quarter = quarter === 1 ? 4 : quarter - 1;
-        rebuildChart();
-    });
-    document.getElementById("sp-next").addEventListener("click", () => {
-        quarter = quarter === 4 ? 1 : quarter + 1;
-        rebuildChart();
-    });
-
-    /* ── Modal open/close ───────────────────────────────────────── */
-    document.querySelector(".star-plot").addEventListener("click", () => {
-        modal.classList.add("show");
-        rebuildChart();
-    });
-    document.querySelector(".sp-close").addEventListener("click", () =>
-        modal.classList.remove("show")
-    );
-    modal.addEventListener("click", e => {
-        if (e.target === modal) modal.classList.remove("show");
-    });
-    document.getElementById("sp-comp-back").addEventListener("click", () =>
-        compPanel.hidden = true
-    );
 })();
 </script>
 
 <script>
+/* ═════════════════ 2. Attendance Calendar (Flatpickr) ═════════════ */
+(() => {
+    const records = JSON.parse(document.getElementById("attendance-json").textContent || "[]");
+
+    flatpickr("#calendar", {
+        inline: true,
+        disableMobile: true,
+        onDayCreate(_,__,___,day) {
+            const date = day.dateObj.toISOString().split("T")[0];
+            const rec = records.find(r => r.date === date);
+            if (rec) {
+                day.classList.add("attendance-" + rec.status);
+                day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
+            }
+        }
+    });
+
+    flatpickr("#calendar-modal-input", {
+        inline: true,
+        disableMobile: true,
+        onDayCreate(_,__,___,day) {
+            const date = day.dateObj.toISOString().split("T")[0];
+            const rec = records.find(r => r.date === date);
+            if (rec) {
+                day.classList.add("attendance-" + rec.status);
+                day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
+            }
+        }
+    });
+})();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("starplot-modal");
+    const closeBtn = document.getElementById("sp-close");
+    const prevBtn = document.getElementById("sp-prev");
+    const nextBtn = document.getElementById("sp-next");
+    const quarterLabel = document.getElementById("sp-quarter-label");
+    const chartContainer = document.getElementById("sp-chart-container");
+    const unavailableMsg = document.getElementById("sp-unavailable");
+    const ctx = document.getElementById("sp-quarter-chart").getContext("2d");
+
+    const starplotData = JSON.parse('{{ all_quarters_starplot_json|escapejs }}');
+    let currentQuarter = 1;
+    let chartInstance = null;
+
+    function renderQuarter(quarter) {
+    const data = starplotData[quarter];
+
+    if (!data || data.values.length === 0) {
+        chartContainer.style.display = "none";
+        unavailableMsg.style.display = "block";
+
+        const missingList = document.getElementById("sp-missing-list");
+        missingList.innerHTML = ""; // Clear old list
+        if (data && data.missing_subjects.length > 0) {
+            data.missing_subjects.forEach(subj => {
+                const li = document.createElement("li");
+                li.textContent = subj;
+                missingList.appendChild(li);
+            });
+        }
+        return;
+    }
+
+    chartContainer.style.display = "block";
+    unavailableMsg.style.display = "none";
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: "radar",
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: `Quarter ${quarter}`,
+                data: data.values,
+                backgroundColor: "rgba(54, 162, 235, 0.2)",
+                borderColor: "rgba(54, 162, 235, 1)",
+                pointBackgroundColor: "rgba(54, 162, 235, 1)"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+}
+
+
+    function updateQuarter(delta) {
+        currentQuarter = ((currentQuarter - 1 + delta + 4) % 4) + 1;
+        quarterLabel.textContent = `Quarter ${currentQuarter}`;
+        renderQuarter(currentQuarter);
+    }
+
+    // Event Listeners
+    prevBtn.addEventListener("click", () => updateQuarter(-1));
+    nextBtn.addEventListener("click", () => updateQuarter(1));
+    closeBtn.addEventListener("click", () => modal.classList.remove("show"));
+
+    // Trigger opening modal from container click
+    document.querySelector(".star-plot").addEventListener("click", () => {
+        modal.classList.add("show");
+        currentQuarter = 1;
+        quarterLabel.textContent = "Quarter 1";
+        renderQuarter(1);
+    });
+});
+</script>
+
+
+
+
+
+<script>
+  // Calendar Modal
 document.addEventListener("DOMContentLoaded", () => {
   const calendarTrigger = document.getElementById("calendarModalTrigger");
   const calendarModal = document.getElementById("calendar-modal");

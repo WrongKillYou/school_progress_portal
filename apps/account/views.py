@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout as django_logout
 from datetime import date
 import json
@@ -15,13 +15,7 @@ from classroom.models import Class, Enrollment
 from badge.models import BadgeShard
 from grade.models import GradeItem, FinalGrade
 
-from account.services import (
-    get_enrolled_classes,
-    get_recent_announcements,
-    build_grade_starplot,
-    get_monthly_attendance,
-    badge_breakdown,
-)
+from account.services import *
 
 
 
@@ -46,6 +40,18 @@ def student_login(request):
     return render(request, 'account/student/student_login.html', {'form': form})
 
 
+
+
+
+# student_dashboard/views.py (or wherever you prepare modal data)
+
+
+
+
+
+
+
+
 @login_required
 @role_required("student")
 def student_dashboard(request):
@@ -53,41 +59,19 @@ def student_dashboard(request):
 
     classes           = get_enrolled_classes(student)
     announcements     = get_recent_announcements(classes)
-    labels, values    = build_grade_starplot(student, classes)
+    starplot_detail   = build_grade_starplot_detail(student, classes)
     attendance_data   = get_monthly_attendance(student)
     badge_ctx         = badge_breakdown(student)
 
-    # ⭐ Build detail = {subject: {"1": {...}, "2": {...}}}
-    detail = {}
-    finals = (
-        FinalGrade.objects
-        .filter(student=student)
-        .select_related("class_obj")
-    )
-
-    for fg in finals:
-        # ensure final_grade is populated
-        if fg.final_grade is None:
-            fg.compute_final_grade()
-
-        subj = fg.class_obj.subject
-        qtr  = str(fg.quarter)          # JSON keys must be strings
-
-        detail.setdefault(subj, {})[qtr] = {
-            "final": fg.final_grade,
-            "components": list(
-                GradeItem.objects
-                .filter(
-                    student=student,
-                    class_obj=fg.class_obj,
-                    quarter=fg.quarter
-                )
-                .values("component", "score", "highest_possible_score")
-            )
-        }
+    labels = list(starplot_detail.keys())
+    values = [starplot_detail[subj].get("1", {}).get("final", 0) for subj in labels]
 
     merit_shards = BadgeShard.objects.filter(student=student, type="merit")
     demerit_shards = BadgeShard.objects.filter(student=student, type="demerit")
+
+    starplot_json, grade_labels = build_all_quarters_starplot(student)
+
+
 
 
     context = {
@@ -97,10 +81,11 @@ def student_dashboard(request):
         "grade_labels": labels,
         "grade_values": values,
         "attendance_data": attendance_data,
-        "starplot_detail_json": json.dumps(detail),
+        "starplot_detail_json": json.dumps(starplot_detail),
         **badge_ctx,
         "merit_shards": merit_shards,
         "demerit_shards": demerit_shards,
+        "all_quarters_starplot_json":starplot_json,
     }
     return render(
         request,
@@ -111,6 +96,8 @@ def student_dashboard(request):
 def focus_personal_info():
     # Upon clicking the name window, focus the avatar and basic info of the student
     return None
+
+
 
 
 # # # # # # # # # # # # #

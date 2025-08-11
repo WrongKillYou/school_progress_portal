@@ -6,8 +6,8 @@ from django.utils import timezone
 from announcement.models import Announcement
 from attendance.models import Attendance
 from badge.models import BadgeShard
-from classroom.models import Class
-from grade.models import FinalGrade
+from classroom.models import Class, Enrollment
+from grade.models import FinalGrade, GradeItem
 
 
 # ────────────────────────────────────────────────────────────
@@ -34,32 +34,84 @@ def get_recent_announcements(classes, limit=10):
 # services/student_dashboard.py
 # services.py
 
-def build_grade_starplot(student, classes, quarter=None):
+def build_grade_starplot_detail(student, classes):
     """
-    Returns (labels, values) for the radar chart.
-    If quarter is provided (1–4), pulls that quarter’s final_grade.
-    If quarter is None, returns zeros (baseline) for each subject.
+    Returns a nested dict:
+    {
+        "Math": {
+            "1": { "final": 92, "components": [...] },
+            "2": { "final": 89, "components": [...] },
+            ...
+        },
+        ...
+    }
     """
-    labels, values = [], []
+    detail = {}
+
     for cls in classes:
-        labels.append(cls.subject)
+        subj = cls.subject
+        for qtr in range(1, 5):
+            fg = FinalGrade.objects.filter(
+                student=student,
+                class_obj=cls,
+                quarter=qtr
+            ).first()
 
-        qs = FinalGrade.objects.filter(student=student, class_obj=cls)
-        if quarter is not None:
-            # fetch only that quarter
-            qs = qs.filter(quarter=quarter)
-        else:
-            # no quarter chosen → we’ll show baseline 0
-            values.append(0)
-            continue
+            final = round(fg.final_grade) if fg and fg.final_grade is not None else 0
 
-        fg = qs.first()
-        if fg and fg.final_grade is not None:
-            values.append(fg.final_grade)
+            components = list(
+                GradeItem.objects.filter(
+                    student=student,
+                    class_obj=cls,
+                    quarter=qtr
+                ).values("component", "score", "highest_possible_score")
+            )
+
+            detail.setdefault(subj, {})[str(qtr)] = {
+                "final": final,
+                "components": components
+            }
+
+    return detail
+
+
+
+import json
+from grade.models import FinalGrade
+def build_all_quarters_starplot(student):
+    data = {}
+    labels_set = set()
+
+    enrolled_subjects = list(
+        Enrollment.objects.filter(student=student)
+        .select_related('class_obj')
+        .values_list('class_obj__subject', flat=True)
+    )
+
+    for quarter in range(1, 5):
+        grades = FinalGrade.objects.filter(student=student, quarter=quarter)
+        posted_subjects = [fg.class_obj.subject for fg in grades]
+        missing_subjects = [subj for subj in enrolled_subjects if subj not in posted_subjects]
+
+        if grades.exists():
+            labels = posted_subjects
+            values = [fg.final_grade for fg in grades]
+            labels_set.update(labels)
+            data[quarter] = {
+                "labels": labels,
+                "values": values,
+                "missing_subjects": missing_subjects
+            }
         else:
-            # no grade for that quarter → baseline
-            values.append(0)
-    return labels, values
+            data[quarter] = {
+                "labels": [],
+                "values": [],
+                "missing_subjects": missing_subjects
+            }
+
+    return json.dumps(data), list(labels_set)
+
+
 
 
 # ────────────────────────────────────────────────────────────
@@ -134,3 +186,5 @@ def badge_breakdown(student):
         "full_squares":     list(range(full_squares)), # list so we can {% for _ in ... %}
         "square_fragments": square_fragments,          # 0-3
     }
+
+

@@ -80,11 +80,16 @@
 .sp-overlay.show{display:flex;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.sp-window{
-    background:#fff;padding:20px 30px;border-radius:10px;
-    max-width:720px;width:95%;max-height:90vh;overflow:auto;
-    transform:scale(.8);animation:grow .25s forwards;
+/* sp-overlay or .sp-window style */
+.sp-window {
+  max-width: 600px;
+  width: 90%;
+  background: white;
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: 90vh;
 }
+
 @keyframes grow{to{transform:scale(1)}}
 
 .sp-close{position:absolute;top:8px;right:14px;background:none;border:none;font-size:1.8rem;line-height:1}
