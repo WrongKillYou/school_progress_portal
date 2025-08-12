@@ -47,41 +47,52 @@
 })();
 </script>
 
+
+
+
+
 <script>
-/* ═════════════════ 2. Attendance Calendar (Flatpickr) ═════════════ */
-(() => {
-    const records = JSON.parse(document.getElementById("attendance-json").textContent || "[]");
+document.addEventListener('DOMContentLoaded', function () {
+    const attendanceData = JSON.parse(document.getElementById("attendance-data").textContent);
+
+    function getRecordForDate(dateStr) {
+        return attendanceData.find(item => item.date === dateStr);
+    }
 
     flatpickr("#calendar", {
         inline: true,
         disableMobile: true,
-        onDayCreate(_,__,___,day) {
-            const date = day.dateObj.toISOString().split("T")[0];
-            const rec = records.find(r => r.date === date);
-            if (rec) {
-                day.classList.add("attendance-" + rec.status);
-                day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
+        onDayCreate: function (dObj, dStr, fp, dayElem) {
+            const date = dayElem.dateObj.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const record = getRecordForDate(date);
+            if (record && record.status) {
+                // Ensure status matches CSS class
+                const status = record.status.toLowerCase();
+                dayElem.classList.add(status);
+                dayElem.setAttribute(
+                    "title",
+                    `Status: ${status.charAt(0).toUpperCase() + status.slice(1)}`
+                );
             }
         }
     });
+});
 
-    flatpickr("#calendar-modal-input", {
-        inline: true,
-        disableMobile: true,
-        onDayCreate(_,__,___,day) {
-            const date = day.dateObj.toISOString().split("T")[0];
-            const rec = records.find(r => r.date === date);
-            if (rec) {
-                day.classList.add("attendance-" + rec.status);
-                day.title = rec.status[0].toUpperCase() + rec.status.slice(1);
-            }
-        }
-    });
-})();
 </script>
 
 
+
+
+
+
+
+
+
+
+
+
 <script>
+  /* ═════════ 3. Starplot Modal ══════════ */
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("starplot-modal");
     const closeBtn = document.getElementById("sp-close");
@@ -171,40 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<script>
-  // Calendar Modal
-document.addEventListener("DOMContentLoaded", () => {
-  const calendarTrigger = document.getElementById("calendarModalTrigger");
-  const calendarModal = document.getElementById("calendar-modal");
-  const calendarClose = document.querySelector(".calendar-close");
-
-  if (!calendarTrigger || !calendarModal || !calendarClose) {
-    console.warn("Calendar modal elements not found.");
-    return;
-  }
-
-  calendarTrigger.addEventListener("click", () => {
-    calendarModal.classList.remove("hidden");
-    calendarModal.classList.add("flex");
-  });
-
-  calendarClose.addEventListener("click", () => {
-    calendarModal.classList.remove("flex");
-    calendarModal.classList.add("hidden");
-  });
-
-  window.addEventListener("click", (e) => {
-    if (e.target === calendarModal) {
-      calendarModal.classList.remove("flex");
-      calendarModal.classList.add("hidden");
-    }
-  });
-});
-</script>
-
-
 
 <script>
+  /* ═════════════════ 4. Announcement Modal ══════════ */
 document.addEventListener("DOMContentLoaded", () => {
   const annItems = document.querySelectorAll(".announcement-item");
   const modal    = document.getElementById("announcement-modal");
@@ -244,6 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
+  /* ═════════════════ 6. Badge Modal ══════════ */
 document.addEventListener("DOMContentLoaded", () => {
   const badgeTrigger = document.getElementById("badgeModalTrigger");
   const badgeModal   = document.getElementById("badge-modal");

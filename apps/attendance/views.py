@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 
 import json
 from django.utils.timezone import now
@@ -8,9 +8,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from account.models import Student
 from classroom.models import Class, Enrollment
-from attendance.models import Attendance
+from attendance.models import Attendance, ClassSession
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from config.decorators import role_required
 
 
@@ -28,6 +29,68 @@ def focus_attendance(request):
 # # # # # # # # # # # # #
 # TEACHER 
 # # # # # # # # # # # # #
+from django.utils.timezone import localdate
+from django.db import transaction
+from attendance.models import Attendance
+from classroom.models import Class, Enrollment
+from django.utils import timezone
+from attendance.models import Attendance
+
+from django.utils import timezone
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from attendance.models import Attendance, ClassSession
+from datetime import date
+
+@login_required
+@role_required("teacher")
+def start_class(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method."})
+
+    teacher = request.user.teacher_profile
+    today = date.today()
+
+    # Get all classes the teacher handles
+    teacher_classes = teacher.class_set.all()
+
+    # Create/activate ClassSession records for each class
+    for class_obj in teacher_classes:
+        session, created = ClassSession.objects.get_or_create(
+            class_obj=class_obj,
+            date=today,
+            defaults={'is_active': True}
+        )
+        if not created and not session.is_active:
+            session.is_active = True
+            session.save()
+
+        # Get students in this class
+        students = Enrollment.objects.filter(class_obj=class_obj).select_related('student')
+
+        for enrollment in students:
+            student = enrollment.student
+
+            # Skip if an attendance record already exists for today in this class
+            if Attendance.objects.filter(student=student, class_obj=class_obj, date=today).exists():
+                continue
+
+            # Mark absent only if no record exists
+            Attendance.objects.create(
+                student=student,
+                class_obj=class_obj,
+                date=today,
+                status='absent'
+            )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Class day started. Students without attendance have been marked absent."
+    })
+
+
+
+
 
 
 @login_required
@@ -70,14 +133,19 @@ def register_attendance(request):
             )
 
             if not created:
-                if not attendance.time_out:
-                    attendance.time_out = now
+                if attendance.status == 'absent':
+                    attendance.time_in = now
+                    attendance.status = 'incomplete'
                     attendance.save()
-                    return JsonResponse({'status': 'success', 'message': f'Time-out for {student.user.get_full_name()} complete.'})
+                    return JsonResponse({'status': 'success', 'message': f'Time-in for {student.user.get_full_name()} recorded (status: incomplete).'})
+                elif attendance.status == 'incomplete' and not attendance.time_out:
+                    attendance.time_out = now
+                    attendance.status = 'present'
+                    attendance.save()
+                    return JsonResponse({'status': 'success', 'message': f'Time-out complete. Status set to present.'})
                 else:
-                    return JsonResponse({'status': 'info', 'message': 'Both time-in and time-out already recorded.'})
-            else:
-                return JsonResponse({'status': 'success', 'message': f'Time-in for {student.user.get_full_name()} complete.'})
+                    return JsonResponse({'status': 'info', 'message': 'Attendance already complete.'})
+
 
         except Student.DoesNotExist:
             return JsonResponse({'status': 'danger', 'message': 'Invalid or unknown LRN.'})

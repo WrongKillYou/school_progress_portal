@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="container-fluid">
-  <!-- Welcome Header -->
   <h2 class="text-center mb-5">Welcome, {{ teacher.user.get_full_name }}</h2>
 
   <!-- Summary Cards -->
@@ -52,12 +51,54 @@
     </div>
   </div>
 
-  <!-- Scan Attendance Button -->
-  <!-- Scan Attendance Button -->
-<div class="d-flex justify-content-center">
-  <a href="{% url 'scan_attendance' %}" class="btn btn-primary btn-lg rounded-pill px-5 py-4 shadow">
-    📷 Scan Attendance
-  </a>
+  <!-- Class Day Toggle & Scan Attendance -->
+  <div class="d-flex flex-column align-items-center gap-3">
+    <button id="classDayBtn" 
+            class="btn btn-outline-danger btn-lg rounded-pill px-5 py-3 shadow fw-bold">
+      🚫 No Class Day
+    </button>
+
+    <a id="scanBtn" 
+       href="{% url 'scan_attendance' %}" 
+       class="btn btn-primary btn-lg rounded-pill px-5 py-4 shadow disabled" 
+       aria-disabled="true">
+      📷 Scan Attendance
+    </a>
+  </div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const btn = document.getElementById("classDayBtn");
+  const scanBtn = document.getElementById("scanBtn");
+
+  btn.addEventListener("click", function() {
+    if (btn.classList.contains("btn-outline-danger")) {
+      if (confirm("Mark today as a Class Day and start attendance for all your classes?")) {
+        fetch("{% url 'start_class' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            btn.textContent = "✅ Class Day";
+            btn.classList.remove("btn-outline-danger");
+            btn.classList.add("btn-success");
+            scanBtn.classList.remove("disabled");
+            scanBtn.removeAttribute("aria-disabled");
+            alert(data.message);
+          } else {
+            alert(data.message || "Error starting class day.");
+          }
+        })
+        .catch(err => console.error(err));
+      }
+    }
+  });
+});
+</script>
 {% endblock %}

@@ -129,6 +129,20 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert, .messages, .message');
+        alerts.forEach(function(alert) {
+            alert.style.transition = "opacity 1s ease";
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 1000); // remove after fade
+        });
+    }, 5000); // 5 seconds before starting fade
+});
+</script>
+
+
 
 
 {% endblock %}

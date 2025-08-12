@@ -68,10 +68,21 @@
 .calendar-card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.05);text-align:center;max-height:280px;overflow:hidden}
 .flatpickr-calendar{max-height:200px !important;overflow-y:auto !important}
 .flatpickr-day{font-size:12px;line-height:1.2}
-/* attendance colours */
-.flatpickr-day.attendance-present {background:#28a745 !important;color:#fff !important;border-radius:50% !important}
-.flatpickr-day.attendance-absent  {background:#dc3545 !important;color:#fff !important;border-radius:50% !important}
-.flatpickr-day.attendance-incomplete{background:#ffc107 !important;color:#000 !important;border-radius:50% !important}
+.flatpickr-day.present {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-radius: 50% !important;
+    }
+    .flatpickr-day.absent {
+        background-color: #F44336 !important;
+        color: white !important;
+        border-radius: 50% !important;
+    }
+    .flatpickr-day.incomplete {
+        background-color: #FFC107 !important;
+        color: black !important;
+        border-radius: 50% !important;
+    }
 /* ─── Star‑plot overlay window ─────────────────────────────── */
 .sp-overlay{
     position:fixed;inset:0;display:none;justify-content:center;align-items:center;

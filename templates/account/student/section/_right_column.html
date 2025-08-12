@@ -1,15 +1,23 @@
 {% load static %}
 
-<!-- Calendar -->
 <section class="calendar">
-  <div class="calendar-card" id="calendarModalTrigger" style="cursor: pointer;">
-  <h5>Attendance</h5>
-  <input id="calendar" type="text" placeholder="Attendance"
-         readonly style="width:100%;cursor:pointer;
-         background:#f9f9f9;border:none;text-align:center;font-weight:bold;">
-</div>
+  <div class="calendar-card">
+    <h5>Attendance</h5>
+    <input id="calendar" type="text" placeholder="Attendance"
+           readonly
+           style="width:100%;
+           background:#f9f9f9;
+           border:none;
+           text-align:center;
+           font-weight:bold;">
+  </div>
 
+  <script type="application/json" id="attendance-data">
+      {{ attendance_json|safe }}
+  </script>
 </section>
+
+
 
 
 

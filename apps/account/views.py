@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout as django_logout
 from datetime import date
 import json
+from django.core.serializers.json import DjangoJSONEncoder
+
 
 from account.models import Student, Teacher, User
 from account.forms import StudentLoginForm, TeacherLoginForm
@@ -56,21 +58,31 @@ def student_login(request):
 @role_required("student")
 def student_dashboard(request):
     student = request.user.student_profile
-
     classes           = get_enrolled_classes(student)
-    announcements     = get_recent_announcements(classes)
-    starplot_detail   = build_grade_starplot_detail(student, classes)
-    attendance_data   = get_monthly_attendance(student)
-    badge_ctx         = badge_breakdown(student)
 
+    announcements     = get_recent_announcements(classes)
+
+    starplot_detail   = build_grade_starplot_detail(student, classes)
+    starplot_json, grade_labels = build_all_quarters_starplot(student)
     labels = list(starplot_detail.keys())
     values = [starplot_detail[subj].get("1", {}).get("final", 0) for subj in labels]
 
+    attendance_records = Attendance.objects.filter(student=student)
+    attendance_data = [
+        {
+            'date': record.date.strftime('%Y-%m-%d'),
+            'status': record.status.lower(),  # ensure lowercase for CSS match
+            'time_in': record.time_in.strftime('%H:%M:%S') if record.time_in else '—',
+            'time_out': record.time_out.strftime('%H:%M:%S') if record.time_out else '—',
+        }
+        for record in attendance_records
+    ]
+
+    badge_ctx         = badge_breakdown(student)
     merit_shards = BadgeShard.objects.filter(student=student, type="merit")
     demerit_shards = BadgeShard.objects.filter(student=student, type="demerit")
 
-    starplot_json, grade_labels = build_all_quarters_starplot(student)
-
+    
 
 
 
@@ -80,7 +92,7 @@ def student_dashboard(request):
         "announcements": announcements,
         "grade_labels": labels,
         "grade_values": values,
-        "attendance_data": attendance_data,
+        "attendance_json": json.dumps(attendance_data, cls=DjangoJSONEncoder),
         "starplot_detail_json": json.dumps(starplot_detail),
         **badge_ctx,
         "merit_shards": merit_shards,

@@ -23,3 +23,16 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.class_obj} on {self.date} [{self.status}]"
+    
+
+class ClassSession(models.Model):
+    class_obj = models.ForeignKey(Class, on_delete=models.CASCADE)
+    date = models.DateField()
+    is_active = models.BooleanField(default=False)  # True when teacher marks "Class Ongoing"
+
+    class Meta:
+        unique_together = ('class_obj', 'date')
+
+    def __str__(self):
+        return f"{self.class_obj} on {self.date} ({'Ongoing' if self.is_active else 'Closed'})"
+
