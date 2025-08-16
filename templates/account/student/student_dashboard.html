@@ -44,3 +44,12 @@
     {% include "account/student/section/dash_scripts.html" %}
 
 {% endblock %}
+
+star_paths = generate_star_paths(merit_count, total_wedges=5)
+demerit_paths = generate_square_paths(demerit_count, total_wedges=4)
+
+context = {
+    # ...existing context
+    "star_paths": star_paths,
+    "demerit_paths": demerit_paths,
+}
