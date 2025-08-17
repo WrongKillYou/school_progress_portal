@@ -59,7 +59,21 @@
   <div class="d-flex">
     <!-- Sidebar -->
     <div class="sidebar">
-      <h2>🏫 School Name</h2>
+  <div style="display: flex; align-items: center;">
+    <img src="/static/images/school-logo.png" alt="school_logo" class="logo">
+
+    <!-- Divider + Text -->
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <!-- Vertical line -->
+      <div style="width: 2px; background-color: white; height: 5em;"></div>
+
+      <!-- Text -->
+      <h2 style="margin: 0; font-size: 0.9rem; ">
+        Eastern Pangasinan Christian Learning Center, Inc.
+      </h2>
+    </div>
+  </div>
+      
       <a href="{% url 'teacher_dashboard' %}">Home</a>
       <a href="{% url 'view_handled_class' %}">Class</a>
       <a href="{% url 'view_all_announcement' %}">Announcement</a>
