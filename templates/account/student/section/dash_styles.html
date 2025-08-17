@@ -3,16 +3,17 @@
 <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
 <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
 
-<!-- ─── Component‑scoped styles ─────────────────────────────────────── -->
+<!-- ─── Component-scoped styles ─────────────────────────────────────── -->
 <style>
 /* ========== 1. GRID LAYOUT (three columns) ========================== */
 .dashboard-container{
     display:grid;
-    grid-template-columns:repeat(3,1fr);           /* left / middle / right */
-    grid-auto-rows:minmax(280px,auto);             /* each row ≥ 280 px     */
+    grid-template-columns:repeat(3,1fr);   /* left / middle / right */
+    grid-auto-rows:1fr;                    /* equal height per row */
     gap:10px;
     max-width:1200px;
     margin:0 auto;
+    align-items:stretch;                   /* stretch cards */
 }
 
 /* Grid stacks for left / middle / right columns */
@@ -23,27 +24,54 @@
     gap:10px;
     height:100%;
 }
-.middle-stack{                                     /* avatar + name  */
+.middle-stack{                             
     display:flex;
     flex-direction:column;
     height:100%;
     padding:10px;
-    outline:2px dotted rgba(0,0,0,.4);             /* dotted border */
-    outline-offset:-2px;
-    border-radius:6px;
 }
-.name-box{margin-top:auto;text-align:center;}      /* push name to bottom */
+.name-box{margin-top:auto;text-align:center;}
 
-/* === shared “card” debug frame (can remove later) =================== */
-.star-plot,.announce,.calendar,.badge-box{
-    min-height:280px;max-height:280px;
+/* === Shared “card” style for most boxes ============================== */
+.star-plot,
+.announce,
+.badge-box,
+.middle-stack {
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,.05);
     overflow-y:auto;
-    outline:2px dashed rgba(0,0,0,.4);
-    outline-offset:-2px;
+    display:flex;
+    flex-direction:column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ========== 2. STAR‑PLOT (radar chart) ============================== */
-.star-plot{background:#e7f3ff;padding:20px;border-radius:8px;text-align:center;}
+.star-plot:hover,
+.announce:hover,
+.badge-box:hover,
+.middle-stack:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Attendance card (special: no flex, so modal works) */
+.calendar {
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,.05);
+    overflow:hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* ========== 2. STAR-PLOT (radar chart) ============================== */
+.star-plot{text-align:center;}
 .chart-wrap{width:100%;max-width:220px;height:220px;margin:0 auto;}
 
 /* ========== 3. ANNOUNCEMENTS ======================================= */
@@ -51,20 +79,19 @@
 .ann-list li{margin-bottom:8px;list-style-type:disc}
 .ann-title{font-weight:600}
 
-/* ========== 4. BADGES (merit / demerit shards) ====================== */
+/* ========== 4. BADGES ============================================== */
 .badge-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .badge{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;width:70px;height:70px}
 .badge.star .shard{width:14px;height:14px;margin:2px;background:#ccc;
     clip-path:polygon(50%0,61%35,98%35,68%57,79%91,50%70,21%91,32%57,2%35,39%35)}
 .badge.square .shard{width:30px;height:30px;margin:2px;background:#ccc}
-.badge .shard.active{background:gold}              /* merit  */
-.badge.square .shard.active{background:crimson}    /* demerit*/
-/* Badge progress visuals */
+.badge .shard.active{background:gold}              
+.badge.square .shard.active{background:crimson}    
 .badge-progress{display:flex;gap:16px;align-items:center;justify-content:center}
 
 /* Merit star */
 .merit-star .star-outline{fill:none;stroke:#c9a634;stroke-width:2}
-.merit-star .star-fill{fill:lightblue}
+.merit-star .star-fill{fill:transparent}
 .merit-star .star-fill.active{fill:#ffd54d}
 
 /* Demerit box */
@@ -77,7 +104,6 @@
 .avatar-img{width:120px;height:120px;border-radius:50%;object-fit:cover}
 
 /* ========== 6. FLATPICKR (attendance calendar) ===================== */
-.calendar-card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.05);text-align:center;max-height:280px;overflow:hidden}
 .flatpickr-calendar{max-height:200px !important;overflow-y:auto !important}
 .flatpickr-day{font-size:12px;line-height:1.2}
 .flatpickr-day.present {
@@ -85,17 +111,18 @@
         color: white !important;
         border-radius: 50% !important;
     }
-    .flatpickr-day.absent {
+.flatpickr-day.absent {
         background-color: #F44336 !important;
         color: white !important;
         border-radius: 50% !important;
     }
-    .flatpickr-day.incomplete {
+.flatpickr-day.incomplete {
         background-color: #FFC107 !important;
         color: black !important;
         border-radius: 50% !important;
     }
-/* ─── Star‑plot overlay window ─────────────────────────────── */
+
+/* ─── Star-plot overlay window ─────────────────────────────── */
 .sp-overlay{
     position:fixed;inset:0;display:none;justify-content:center;align-items:center;
     backdrop-filter:blur(4px);background:rgba(0,0,0,.5);z-index:2000;
@@ -103,7 +130,6 @@
 .sp-overlay.show{display:flex;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* sp-overlay or .sp-window style */
 .sp-window {
   max-width: 600px;
   width: 90%;
@@ -153,8 +179,4 @@
   border: none;
   cursor: pointer;
 }
-
-
-
-
 </style>
