@@ -1,5 +1,6 @@
 from django import forms
 from .models import Student, User
+from django.contrib.auth.forms import PasswordChangeForm
 
 class StudentLoginForm(forms.Form):
     lrn = forms.CharField(max_length=50)
@@ -20,3 +21,18 @@ class TeacherLoginForm(forms.Form):
         if not User.objects.filter(username=username).exists():
             raise forms.ValidationError("Invalid username")
         return username
+
+
+class TeacherPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Old Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter old password'})
+    )
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter new password'})
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm new password'})
+    )
