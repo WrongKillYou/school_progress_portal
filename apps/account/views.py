@@ -54,37 +54,87 @@ def student_login(request):
 
 
 
+import math
+
+def generate_star_paths(count, total=5, radius=20, center=(25, 25)):
+    """Generate SVG path slices for a 5-point star, filled clockwise based on count."""
+    cx, cy = center
+    # Precompute star points (outer & inner alternating)
+    points = []
+    for i in range(total * 2):
+        angle_deg = 90 + (i * 360 / (total * 2))
+        angle_rad = math.radians(angle_deg)
+        r = radius if i % 2 == 0 else radius / 2.5
+        x = cx + r * math.cos(angle_rad)
+        y = cy - r * math.sin(angle_rad)
+        points.append((x, y))
+
+    # Create slices for filled count
+    paths = []
+    slice_size = len(points) // total
+    for i in range(count):
+        start_idx = i * slice_size
+        end_idx = (i + 1) * slice_size + 1
+        slice_points = [(cx, cy)] + points[start_idx:end_idx] + [(cx, cy)]
+        path_data = "M " + " L ".join(f"{x},{y}" for x, y in slice_points) + " Z"
+        paths.append(path_data)
+    return paths
+
+def generate_square_paths(count, total=4, size=40, center=(25, 25)):
+    """Generate SVG path slices for a square (divided equally)."""
+    cx, cy = center
+    half = size / 2
+    # Clockwise from top-left
+    square_points = [
+        (cx - half, cy - half),  # top-left
+        (cx + half, cy - half),  # top-right
+        (cx + half, cy + half),  # bottom-right
+        (cx - half, cy + half)   # bottom-left
+    ]
+    paths = []
+    for i in range(count):
+        next_i = (i + 1) % total
+        path_data = f"M {cx},{cy} L {square_points[i][0]},{square_points[i][1]} L {square_points[next_i][0]},{square_points[next_i][1]} Z"
+        paths.append(path_data)
+    return paths
+
 @login_required
 @role_required("student")
 def student_dashboard(request):
     student = request.user.student_profile
-    classes           = get_enrolled_classes(student)
+    classes = get_enrolled_classes(student)
+    announcements = get_recent_announcements(classes)
 
-    announcements     = get_recent_announcements(classes)
-
-    starplot_detail   = build_grade_starplot_detail(student, classes)
+    starplot_detail = build_grade_starplot_detail(student, classes)
     starplot_json, grade_labels = build_all_quarters_starplot(student)
     labels = list(starplot_detail.keys())
     values = [starplot_detail[subj].get("1", {}).get("final", 0) for subj in labels]
 
     attendance_records = Attendance.objects.filter(student=student)
-    attendance_data = [
-        {
-            'date': record.date.strftime('%Y-%m-%d'),
-            'status': record.status.lower(),  # ensure lowercase for CSS match
-            'time_in': record.time_in.strftime('%H:%M:%S') if record.time_in else '—',
-            'time_out': record.time_out.strftime('%H:%M:%S') if record.time_out else '—',
-        }
-        for record in attendance_records
-    ]
+    attendance_data = [{
+        'date': r.date.strftime('%Y-%m-%d'),
+        'status': r.status.lower(),
+        'time_in': r.time_in.strftime('%H:%M:%S') if r.time_in else '—',
+        'time_out': r.time_out.strftime('%H:%M:%S') if r.time_out else '—',
+    } for r in attendance_records]
 
-    badge_ctx         = badge_breakdown(student)
+    badge_ctx = badge_breakdown(student)
     merit_shards = BadgeShard.objects.filter(student=student, type="merit")
     demerit_shards = BadgeShard.objects.filter(student=student, type="demerit")
+ 
+    # Count how many merits and demerits this student has
+    merit_count = BadgeShard.objects.filter(student=student, type="merit").count()
+    demerit_count = BadgeShard.objects.filter(student=student, type="demerit").count()
 
-    
+
+    # Generate SVG paths for star & square
+    merit_star_paths = generate_star_paths(merit_count, total=5)
+    demerit_square_paths = generate_square_paths(demerit_count, total=4)
 
 
+
+    # Debug to see if the star paths are correct
+    print("DEBUG merit_star_paths:", merit_star_paths)
 
     context = {
         "student": student,
@@ -95,19 +145,20 @@ def student_dashboard(request):
         "attendance_json": json.dumps(attendance_data, cls=DjangoJSONEncoder),
         "starplot_detail_json": json.dumps(starplot_detail),
         **badge_ctx,
-        "merit_shards": merit_shards,
-        "demerit_shards": demerit_shards,
-        "all_quarters_starplot_json":starplot_json,
+        "merit_count": merit_count,
+        "demerit_count": demerit_count,
+        "merit_star_paths": merit_star_paths,
+        "demerit_square_paths": demerit_square_paths,
+        "all_quarters_starplot_json": starplot_json,
     }
-    return render(
-        request,
-        "account/student/student_dashboard.html",
-        context
-    )
+    return render(request, "account/student/student_dashboard.html", context)
+
+
 
 def focus_personal_info():
     # Upon clicking the name window, focus the avatar and basic info of the student
     return None
+
 
 
 

@@ -21,34 +21,57 @@
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
-        .dashboard-box {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.05);
-            padding: 1rem;
-        }
-    </style>
+  body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9fa;
+  }
+
+  .dashboard-box {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb; /* light gray border */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      transition: all 0.2s ease-in-out;
+  }
+
+  .dashboard-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* optional: add spacing between boxes */
+  .dashboard-grid {
+      display: grid;
+      gap: 1.5rem;
+  }
+</style>
+
 
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Simple Navbar/Header -->
-    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
-    <div class="container d-flex justify-content-between align-items-center">
-        <span class="navbar-brand mb-0 h1">Student Portal</span>
-        
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-                Log Out
-            </button>
-        </form>
-    </div>
+    {% load static %}
+
+    <nav class="navbar navbar-dark mb-4" style="background-color: #F0401D;">
+        <div class="container d-flex justify-content-between align-items-center">
+      
+      <span class="navbar-brand mb-0 h1 d-flex align-items-center">
+        <img src="/static/images/school_logo.png" alt="School Logo" 
+             class="me-2" style="height: 50px; width: auto;">
+        Eastern Pangasinan Christian Learning Center, Inc.
+      </span>
+      
+      <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+              Log Out
+          </button>
+      </form>
+  </div>
 </nav>
+
 
     <div class="container">
         {% block content %}{% endblock %}
