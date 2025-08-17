@@ -1,43 +1,54 @@
 <!-- _badge_modal.html -->
-<div id="badge-modal" class="calendar-overlay hidden" x-data="{
-  showModal: false,
-  merit: {{ merit_shards|safe }},
-  demerit: {{ demerit_shards|safe }},
-}">
+<div id="badge-modal" class="calendar-overlay hidden" x-data="{ showModal: false }">
   <div class="calendar-window" @click.away="showModal = false">
     <button class="calendar-close" id="badge-close">&times;</button>
     <h5 class="mb-3 fw-bold">🎖️ My Badges</h5>
 
-    <!-- MERIT SHARDS -->
-    <div class="mb-4">
+    <!-- MERIT STAR -->
+    <div class="mb-4 text-center">
       <h6 class="text-primary mb-2">⭐ Merit Badge Progress</h6>
-      {% for shard in merit_shards %}
-        <span class="position-relative d-inline-block me-1 mb-1">
-          <div class="shard merit">
-            ★
-            <div class="tooltip">{{ shard.reason }}</div>
-          </div>
-        </span>
-      {% endfor %}
-      {% for i in empty_merit %}
-        <span class="shard">★</span>
-      {% endfor %}
+      <svg class="merit-star" viewBox="0 0 100 100" width="100" height="100" aria-label="Merit progress">
+        <defs>
+          <!-- Star shape outline (unique ID for modal) -->
+          <path id="meritStarShapeModal"
+                d="M50,5 L60.103,36.094 L92.798,36.094 L66.347,55.312 L76.450,86.406
+                   L50,67.188 L23.550,86.406 L33.653,55.312 L7.202,36.094 L39.897,36.094 Z" />
+
+          <!-- 5 clip paths with unique IDs -->
+          <clipPath id="wedge1_modal"><path d="M50,50 L50,1 A49,49 0 0 1 96.602,34.858 Z"/></clipPath>
+          <clipPath id="wedge2_modal"><path d="M50,50 L96.602,34.858 A49,49 0 0 1 78.801,89.642 Z"/></clipPath>
+          <clipPath id="wedge3_modal"><path d="M50,50 L78.801,89.642 A49,49 0 0 1 21.199,89.642 Z"/></clipPath>
+          <clipPath id="wedge4_modal"><path d="M50,50 L21.199,89.642 A49,49 0 0 1 3.398,34.858 Z"/></clipPath>
+          <clipPath id="wedge5_modal"><path d="M50,50 L3.398,34.858  A49,49 0 0 1 50,1 Z"/></clipPath>
+        </defs>
+
+        <!-- outline -->
+        <use xlink:href="#meritStarShapeModal" class="star-outline" />
+
+        <!-- fill slices -->
+        <use xlink:href="#meritStarShapeModal" clip-path="url(#wedge1_modal)" class="star-fill {% if merit_count >= 1 %}active{% endif %}"/>
+        <use xlink:href="#meritStarShapeModal" clip-path="url(#wedge2_modal)" class="star-fill {% if merit_count >= 2 %}active{% endif %}"/>
+        <use xlink:href="#meritStarShapeModal" clip-path="url(#wedge3_modal)" class="star-fill {% if merit_count >= 3 %}active{% endif %}"/>
+        <use xlink:href="#meritStarShapeModal" clip-path="url(#wedge4_modal)" class="star-fill {% if merit_count >= 4 %}active{% endif %}"/>
+        <use xlink:href="#meritStarShapeModal" clip-path="url(#wedge5_modal)" class="star-fill {% if merit_count >= 5 %}active{% endif %}"/>
+      </svg>
+      <div class="mt-2">{{ merit_count }}/5</div>
     </div>
 
-    <!-- DEMERIT SHARDS -->
-    <div class="mb-2">
+    <!-- DEMERIT BOX -->
+    <div class="mb-2 text-center">
       <h6 class="text-danger mb-2">🟥 Demerit Badge Progress</h6>
-      {% for shard in demerit_shards %}
-        <span class="position-relative d-inline-block me-1 mb-1">
-          <div class="shard demerit">
-            ■
-            <div class="tooltip">{{ shard.reason }}</div>
-          </div>
-        </span>
-      {% endfor %}
-      {% for i in empty_demerit %}
-        <span class="shard">■</span>
-      {% endfor %}
+      <svg class="demerit-box" viewBox="0 0 100 100" width="100" height="100" aria-label="Demerit progress">
+        <!-- faint outline -->
+        <rect x="10" y="10" width="80" height="80" class="box-outline" />
+
+        <!-- sides (unique IDs not needed here since no defs/clipPaths) -->
+        <line x1="10" y1="10" x2="90" y2="10" class="box-side {% if demerit_count >= 1 %}active{% endif %}"/>
+        <line x1="90" y1="10" x2="90" y2="90" class="box-side {% if demerit_count >= 2 %}active{% endif %}"/>
+        <line x1="90" y1="90" x2="10" y2="90" class="box-side {% if demerit_count >= 3 %}active{% endif %}"/>
+        <line x1="10" y1="90" x2="10" y2="10" class="box-side {% if demerit_count >= 4 %}active{% endif %}"/>
+      </svg>
+      <div class="mt-2">{{ demerit_count }}/4</div>
     </div>
   </div>
 </div>
