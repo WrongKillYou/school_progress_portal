@@ -111,7 +111,7 @@ class TeacherCreationForm(forms.ModelForm):
                 email=self.cleaned_data['email'],
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
-                role='student'
+                role='teacher'
             )
         else:
             # Update existing user
