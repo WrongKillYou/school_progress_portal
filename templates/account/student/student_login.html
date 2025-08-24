@@ -1,41 +1,82 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Student Login{% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center">
-    <!-- Widened column for more comfortable login form spacing -->
-    <div class="col-12 col-sm-10 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-          <h2 class="card-title mb-4 text-center">Student Login</h2>
-          <form method="POST" novalidate>
-            {% csrf_token %}
-            <div class="mb-3">
-              <label for="id_lrn" class="form-label">Learner's Reference Number (LRN)</label>
-              <input
-                type="text"
-                name="lrn"
-                id="id_lrn"
-                class="form-control"
-                placeholder="Enter your LRN"
-                required
-              />
-            </div>
-            {% if error %}
-              <div class="alert alert-danger py-2" role="alert">{{ error }}</div>
-            {% endif %}
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">Login</button>
-            </div>
-          </form>
-          <hr class="my-4" />
-          <p class="text-center mb-2">Are you a teacher?</p>
-          <div class="text-center">
-            <a href="{% url 'teacher_login' %}" class="btn btn-outline-secondary btn-sm">Go to Teacher Login</a>
-          </div>
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-10 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="card-title mb-4 text-center">Student Login</h2>
+
+        <!-- QR Scanner container -->
+        <div class="qr-container p-3 mb-3 border rounded bg-light">
+          <div id="qr-reader" class="mx-auto"></div>
+        </div>
+        <div id="qr-reader-results" class="text-center mt-3"></div>
+
+        <hr class="my-4" />
+        <p class="text-center mb-2">Are you a teacher?</p>
+        <div class="text-center">
+          <a href="{% url 'teacher_login' %}" class="btn btn-outline-secondary btn-sm">
+            Go to Teacher Login
+          </a>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Load your local QR Code library -->
+<script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<script>
+  function onScanSuccess(decodedText, decodedResult) {
+      console.log(`QR matched = ${decodedText}`);
+      const resultsBox = document.getElementById("qr-reader-results");
+
+      resultsBox.innerHTML =
+          `<div class="alert alert-success shadow-sm">QR Code Scanned: ${decodedText}</div>`;
+
+      // Auto-submit via POST to your student_login view
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "{% url 'student_login' %}";
+
+      const csrfToken = "{{ csrf_token }}";
+      form.innerHTML = `
+          <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+          <input type="hidden" name="lrn" value="${decodedText}">
+      `;
+      document.body.appendChild(form);
+      form.submit();
+  }
+
+  let html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader", 
+      { fps: 10, qrbox: 250 }
+  );
+  html5QrcodeScanner.render(onScanSuccess);
+</script>
+
+<style>
+  /* Make QR scanner look cleaner */
+  .qr-container {
+    max-width: 320px;
+    margin: 0 auto;
+    background: #f8f9fa;
+  }
+
+  #qr-reader {
+    width: 100% !important;
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+
+  #qr-reader-results .alert {
+    font-size: 0.95rem;
+    padding: .5rem 1rem;
+    margin-top: .5rem;
+  }
+</style>
 {% endblock %}
