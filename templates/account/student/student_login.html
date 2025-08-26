@@ -32,20 +32,31 @@
 <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
 <script>
   function onScanSuccess(decodedText, decodedResult) {
-      console.log(`QR matched = ${decodedText}`);
       const resultsBox = document.getElementById("qr-reader-results");
 
       resultsBox.innerHTML =
           `<div class="alert alert-success shadow-sm">QR Code Scanned: ${decodedText}</div>`;
+
+      // Fade out the message after 5 seconds
+      setTimeout(() => {
+        const alertBox = resultsBox.querySelector(".alert");
+        if (alertBox) {
+          alertBox.style.transition = "opacity 1s ease";
+          alertBox.style.opacity = "0";
+          setTimeout(() => alertBox.remove(), 1000);
+        }
+      }, 5000);
+
+      // Stop scanner after first success
+      html5QrcodeScanner.clear().catch(err => console.error("Stop failed", err));
 
       // Auto-submit via POST to your student_login view
       const form = document.createElement("form");
       form.method = "POST";
       form.action = "{% url 'student_login' %}";
 
-      const csrfToken = "{{ csrf_token }}";
       form.innerHTML = `
-          <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
           <input type="hidden" name="lrn" value="${decodedText}">
       `;
       document.body.appendChild(form);
